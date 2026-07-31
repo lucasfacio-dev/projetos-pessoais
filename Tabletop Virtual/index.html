@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Tabletop Virtual</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+
+    <h2>🎲 Tabletop Virtual</h2>
+
+    <div class="section">
+      <h3>Mapa</h3>
+      <input type="file" id="mapUpload" accept="image/*">
+      <button id="resetZoom">Reset Zoom</button>
+      <button id="removeMap">Remover Mapa</button>
+    </div>
+
+    <div class="section">
+      <h3>Tokens (PNG)</h3>
+      <input type="file" id="tokenUpload" accept="image/png" multiple>
+    </div>
+
+    <div class="section">
+      <h3>Páginas</h3>
+      <button id="newPage">+ Nova Página</button>
+      <div id="pagesList"></div>
+    </div>
+
+    <div class="section">
+      <h3>Ferramentas</h3>
+      <button id="toggleGrid">Grid ON/OFF</button>
+      <button id="duplicateToken">Duplicar Token</button>
+      <button id="deleteToken">Excluir Token</button>
+    </div>
+
+    <div class="section">
+      <h3>Inventário</h3>
+      <div id="inventory"></div>
+    </div>
+
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main">
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <button id="zoomIn">+</button>
+      <button id="zoomOut">-</button>
+      <button id="centerMap">C</button>
+    </div>
+
+    <!-- CANVAS -->
+    <div class="canvas-container" id="canvasContainer">
+
+      <div class="canvas" id="canvas">
+
+        <!-- MAPA -->
+        <img id="mapImage" class="map" src="" alt="Mapa">
+
+        <!-- GRID -->
+        <div id="gridOverlay" class="grid-overlay"></div>
+
+        <!-- TOKENS -->
+        <div id="tokensLayer" class="tokens-layer"></div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ===== TEMPLATE TOKEN ===== -->
+  <template id="tokenTemplate">
+    <div class="token">
+      <img src="">
+      <div class="token-controls">
+        <button class="rotate-left">⟲</button>
+        <button class="rotate-right">⟳</button>
+      </div>
+    </div>
+  </template>
+
+  <!-- ===== TEMPLATE INVENTÁRIO ===== -->
+  <template id="inventoryItemTemplate">
+    <div class="inventory-item" draggable="true">
+      <img src="">
+    </div>
+  </template>
+
+  <!-- ===== SCRIPT ===== -->
+  <script src="script.js"></script>
+
+</body>
+</html>

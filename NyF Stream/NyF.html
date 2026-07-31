@@ -1,0 +1,3499 @@
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>NyF Stream</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: #0b0b0b;
+      color: #f0f0f0;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #1a1a1a; }
+    ::-webkit-scrollbar-thumb { background: #e50914; border-radius: 10px; }
+
+    .login-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      background: #0b0b0b;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+      transition: opacity 0.5s ease, visibility 0.5s;
+    }
+
+    .login-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .login-screen .logo-big {
+      font-size: 3.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #e50914, #b20710);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .login-screen .logo-big i {
+      -webkit-text-fill-color: #e50914;
+      font-size: 3rem;
+    }
+
+    .login-box {
+      background: #141414;
+      padding: 30px 24px;
+      border-radius: 32px;
+      border: 1px solid #2a2a2a;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+    }
+
+    .login-box h2 {
+      font-weight: 500;
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+      color: #ddd;
+      text-align: center;
+    }
+
+    .login-box input {
+      width: 100%;
+      padding: 14px 18px;
+      background: #1f1f1f;
+      border: 1px solid #333;
+      border-radius: 40px;
+      color: white;
+      font-size: 1rem;
+      outline: none;
+      transition: 0.2s;
+      margin-bottom: 16px;
+    }
+
+    .login-box input:focus {
+      border-color: #e50914;
+    }
+
+    .login-box button {
+      width: 100%;
+      padding: 14px;
+      background: #e50914;
+      border: none;
+      border-radius: 40px;
+      color: white;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.2s;
+      letter-spacing: 0.5px;
+    }
+
+    .login-box button:hover {
+      background: #f40612;
+      transform: scale(1.02);
+    }
+
+    .login-box .hint {
+      color: #666;
+      font-size: 0.75rem;
+      text-align: center;
+      margin-top: 14px;
+    }
+
+    .app-container {
+      display: none;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .app-container.active {
+      display: flex;
+    }
+
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: linear-gradient(180deg, #0f0f0f 0%, transparent 100%);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      gap: 10px;
+    }
+
+    .logo-small {
+      font-size: 1.4rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #e50914, #b20710);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .logo-small i {
+      -webkit-text-fill-color: #e50914;
+    }
+
+    .user-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #1a1a1a;
+      padding: 4px 14px 4px 10px;
+      border-radius: 40px;
+      border: 1px solid #2e2e2e;
+      font-size: 0.85rem;
+    }
+
+    .user-badge i {
+      color: #ccc;
+      font-size: 1rem;
+    }
+
+    .user-badge span {
+      max-width: 80px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .user-badge button {
+      background: transparent;
+      border: none;
+      color: #888;
+      cursor: pointer;
+      font-size: 0.8rem;
+      padding: 2px 6px;
+      border-radius: 20px;
+      transition: 0.2s;
+    }
+
+    .user-badge button:hover {
+      color: white;
+      background: #2a2a2a;
+    }
+
+    .search-section {
+      padding: 8px 16px 16px 16px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      background: #0b0b0b;
+    }
+
+    .search-box {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      background: #1a1a1a;
+      border-radius: 40px;
+      padding: 0 16px;
+      border: 1px solid #2a2a2a;
+      min-width: 160px;
+    }
+
+    .search-box i {
+      color: #777;
+      margin-right: 10px;
+      font-size: 0.9rem;
+    }
+
+    .search-box input {
+      background: transparent;
+      border: none;
+      padding: 10px 0;
+      color: white;
+      width: 100%;
+      outline: none;
+      font-size: 0.9rem;
+    }
+
+    .filter-genre {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #1a1a1a;
+      padding: 0 14px;
+      border-radius: 40px;
+      border: 1px solid #2a2a2a;
+    }
+
+    .filter-genre i {
+      color: #777;
+      font-size: 0.8rem;
+    }
+
+    #genreFilter {
+      background: transparent;
+      border: none;
+      color: white;
+      padding: 10px 2px;
+      font-size: 0.8rem;
+      outline: none;
+      cursor: pointer;
+      max-width: 110px;
+    }
+
+    #genreFilter option {
+      background: #1a1a1a;
+    }
+
+    .hero-carousel {
+      margin: 0 12px 18px 12px;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.7);
+      position: relative;
+      height: 180px;
+      background: #111;
+      border: 1px solid #262626;
+    }
+
+    .hero-track {
+      display: flex;
+      height: 100%;
+      transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .hero-slide {
+      min-width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      align-items: flex-end;
+      padding: 20px;
+      background-color: #1a1a1a;
+      position: relative;
+    }
+
+    .hero-slide::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(0deg, #0b0b0b 15%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-slide .hero-text {
+      position: relative;
+      z-index: 2;
+      max-width: 75%;
+    }
+
+    .hero-slide .hero-text h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.9);
+      line-height: 1.2;
+    }
+
+    .hero-slide .hero-text p {
+      font-size: 0.7rem;
+      opacity: 0.8;
+      text-shadow: 0 2px 10px black;
+      margin-top: 2px;
+    }
+
+    .hero-dots {
+      position: absolute;
+      bottom: 10px;
+      right: 16px;
+      display: flex;
+      gap: 8px;
+      z-index: 5;
+    }
+
+    .hero-dots span {
+      width: 8px;
+      height: 8px;
+      background: #555;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .hero-dots span.active {
+      background: #e50914;
+      width: 22px;
+      border-radius: 20px;
+    }
+
+    .hero-edit-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 10;
+      background: rgba(0,0,0,0.7);
+      border: 1px solid #444;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 30px;
+      font-size: 0.7rem;
+      cursor: pointer;
+      display: none;
+      backdrop-filter: blur(4px);
+    }
+
+    .hero-edit-btn.visible {
+      display: block;
+    }
+
+    .hero-edit-btn:hover {
+      background: #e50914;
+      border-color: #e50914;
+    }
+
+    .admin-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 10px 16px 18px 16px;
+      justify-content: center;
+    }
+
+    .admin-actions.hidden {
+      display: none;
+    }
+
+    .admin-actions button {
+      background: #1a1a1a;
+      border: 1px solid #2e2e2e;
+      color: #ddd;
+      padding: 6px 14px;
+      border-radius: 30px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .admin-actions button i {
+      font-size: 0.8rem;
+    }
+
+    .admin-actions button:hover {
+      background: #2a2a2a;
+      border-color: #e50914;
+      color: white;
+    }
+
+    .admin-actions .danger {
+      background: #2a1212;
+      border-color: #4a1a1a;
+      color: #e08080;
+    }
+
+    .admin-actions .save-btn {
+      background: #0d3b1a;
+      border-color: #1a6b2a;
+      color: #7fdb8a;
+    }
+
+    .admin-actions .save-btn:hover {
+      background: #1a5a2a;
+      border-color: #2a8a3a;
+    }
+
+    .catalog-section {
+      padding: 0 12px 30px 12px;
+    }
+
+    .catalog-row {
+      margin-bottom: 28px;
+    }
+
+    .catalog-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 0 4px 8px 4px;
+    }
+
+    .catalog-header h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .catalog-header .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .catalog-header .badge-count {
+      font-size: 0.6rem;
+      color: #888;
+      background: #1a1a1a;
+      padding: 2px 12px;
+      border-radius: 30px;
+    }
+
+    .catalog-header .edit-catalog-btn {
+      background: transparent;
+      border: none;
+      color: #888;
+      cursor: pointer;
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 20px;
+      transition: 0.2s;
+    }
+
+    .catalog-header .edit-catalog-btn:hover {
+      background: #1a1a1a;
+      color: #ddd;
+    }
+
+    .movie-grid {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding: 4px 2px 14px 2px;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      position: relative;
+    }
+
+    .movie-grid::-webkit-scrollbar {
+      height: 3px;
+    }
+
+    .movie-card {
+      min-width: 130px;
+      max-width: 150px;
+      background: #141414;
+      border-radius: 14px;
+      overflow: hidden;
+      transition: 0.2s ease;
+      border: 1px solid #222;
+      scroll-snap-align: start;
+      flex-shrink: 0;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      position: relative;
+    }
+
+    .movie-card:active {
+      transform: scale(0.96);
+    }
+
+    .movie-card img {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+      background: #1e1e1e;
+      border-bottom: 1px solid #2a2a2a;
+    }
+
+    .movie-info {
+      padding: 10px 10px 14px 10px;
+    }
+
+    .movie-info h4 {
+      font-size: 0.8rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .movie-info .genre-tag {
+      font-size: 0.6rem;
+      color: #aaa;
+      background: #252525;
+      display: inline-block;
+      padding: 1px 10px;
+      border-radius: 30px;
+      margin-top: 4px;
+      letter-spacing: 0.2px;
+    }
+
+    .movie-info .desc {
+      font-size: 0.65rem;
+      color: #888;
+      margin-top: 4px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      line-height: 1.3;
+    }
+
+    .movie-info .meta-info {
+      font-size: 0.6rem;
+      color: #666;
+      margin-top: 3px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .movie-card .series-badge {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      background: rgba(229, 9, 20, 0.9);
+      color: white;
+      font-size: 0.55rem;
+      padding: 2px 10px;
+      border-radius: 30px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      backdrop-filter: blur(4px);
+    }
+
+    .movie-card .edit-overlay {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: rgba(0,0,0,0.7);
+      border-radius: 30px;
+      padding: 2px 8px;
+      font-size: 0.6rem;
+      display: none;
+      gap: 4px;
+      backdrop-filter: blur(4px);
+    }
+
+    .movie-card .edit-overlay button {
+      background: transparent;
+      border: none;
+      color: #ddd;
+      cursor: pointer;
+      padding: 2px 4px;
+    }
+
+    .movie-card .edit-overlay button:hover {
+      color: #e50914;
+    }
+
+    .movie-card .edit-overlay.visible {
+      display: flex;
+    }
+
+    .movie-card .order-controls {
+      position: absolute;
+      bottom: 4px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.8);
+      border-radius: 30px;
+      padding: 2px 8px;
+      display: none;
+      gap: 6px;
+      backdrop-filter: blur(4px);
+      z-index: 5;
+    }
+
+    .movie-card .order-controls.visible {
+      display: flex;
+    }
+
+    .movie-card .order-controls button {
+      background: transparent;
+      border: none;
+      color: #ccc;
+      cursor: pointer;
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 20px;
+      transition: 0.2s;
+    }
+
+    .movie-card .order-controls button:hover {
+      background: #2a2a2a;
+      color: white;
+    }
+
+    .video-player-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 99998;
+      background: #000;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .video-player-overlay.active {
+      display: flex;
+    }
+
+    .video-player-overlay .close-video {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: white;
+      font-size: 1.8rem;
+      cursor: pointer;
+      padding: 8px 16px;
+      border-radius: 40px;
+      transition: 0.2s;
+      z-index: 10;
+      backdrop-filter: blur(4px);
+    }
+
+    .video-player-overlay .close-video:hover {
+      background: rgba(255,255,255,0.25);
+    }
+
+    .video-player-overlay .video-wrapper {
+      width: 100%;
+      max-width: 900px;
+      padding: 20px;
+      position: relative;
+    }
+
+    .video-player-overlay .video-wrapper iframe {
+      width: 100%;
+      aspect-ratio: 16/9;
+      border: none;
+      border-radius: 12px;
+      background: #0a0a0a;
+    }
+
+    .video-player-overlay .video-title {
+      color: #fff;
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-top: 12px;
+      text-align: center;
+      padding: 0 16px;
+    }
+
+    .episode-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 99997;
+      background: #0b0b0b;
+      display: none;
+      flex-direction: column;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .episode-overlay.active {
+      display: flex;
+    }
+
+    .close-episode {
+      position: sticky;
+      top: 0;
+      align-self: flex-end;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: white;
+      font-size: 1.8rem;
+      cursor: pointer;
+      padding: 8px 20px;
+      border-radius: 40px;
+      transition: 0.2s;
+      z-index: 10;
+      backdrop-filter: blur(4px);
+      margin-bottom: 16px;
+    }
+
+    .close-episode:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .episode-container {
+      max-width: 1000px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .episode-header {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 24px;
+      padding: 20px;
+      background: #141414;
+      border-radius: 16px;
+      border: 1px solid #2a2a2a;
+      flex-wrap: wrap;
+    }
+
+    .episode-header img {
+      width: 200px;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 12px;
+      background: #1a1a1a;
+    }
+
+    .episode-header-info {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .episode-header-info h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .episode-header-info p {
+      color: #aaa;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      margin-bottom: 10px;
+    }
+
+    .episode-meta {
+      display: flex;
+      gap: 12px;
+      font-size: 0.8rem;
+      color: #888;
+      flex-wrap: wrap;
+    }
+
+    .episode-meta span {
+      background: #1a1a1a;
+      padding: 4px 14px;
+      border-radius: 30px;
+    }
+
+    .episode-meta .series-badge-large {
+      background: #e50914;
+      color: white;
+      font-weight: 600;
+    }
+
+    .season-filter {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      padding: 0 4px;
+      align-items: center;
+    }
+
+    .season-btn {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      color: #aaa;
+      padding: 8px 22px;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 0.85rem;
+    }
+
+    .season-btn:hover {
+      background: #2a2a2a;
+      color: white;
+    }
+
+    .season-btn.active {
+      background: #e50914;
+      border-color: #e50914;
+      color: white;
+    }
+
+    .season-btn .season-actions {
+      display: none;
+    }
+
+    .season-btn:hover .season-actions {
+      display: inline;
+    }
+
+    .episode-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      padding: 4px;
+    }
+
+    .episode-card {
+      background: #141414;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid #222;
+      cursor: pointer;
+      transition: 0.25s;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .episode-card:hover {
+      border-color: #e50914;
+      transform: translateY(-3px);
+    }
+
+    .episode-card img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      background: #1a1a1a;
+    }
+
+    .episode-card .episode-info {
+      padding: 12px 14px;
+    }
+
+    .episode-card .episode-info h4 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+
+    .episode-card .episode-info .episode-number {
+      font-size: 0.7rem;
+      color: #888;
+      background: #1a1a1a;
+      display: inline-block;
+      padding: 2px 14px;
+      border-radius: 30px;
+      margin-bottom: 6px;
+    }
+
+    .episode-card .episode-info p {
+      font-size: 0.75rem;
+      color: #888;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      line-height: 1.3;
+    }
+
+    .episode-card .episode-play-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.7);
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.6rem;
+      opacity: 0;
+      transition: 0.3s;
+      backdrop-filter: blur(4px);
+      border: 2px solid rgba(255,255,255,0.2);
+    }
+
+    .episode-card:hover .episode-play-icon {
+      opacity: 1;
+    }
+
+    .episode-card .episode-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(0,0,0,0.85);
+      color: white;
+      padding: 2px 14px;
+      border-radius: 30px;
+      font-size: 0.6rem;
+      backdrop-filter: blur(4px);
+      font-weight: 600;
+    }
+
+    .episode-card .episode-admin-actions {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      display: none;
+      gap: 4px;
+    }
+
+    .episode-card .episode-admin-actions button {
+      background: rgba(0,0,0,0.85);
+      border: none;
+      color: #ddd;
+      padding: 4px 8px;
+      border-radius: 30px;
+      cursor: pointer;
+      font-size: 0.6rem;
+      backdrop-filter: blur(4px);
+      transition: 0.2s;
+    }
+
+    .episode-card .episode-admin-actions button:hover {
+      background: rgba(229, 9, 20, 0.9);
+      color: white;
+    }
+
+    .episode-card:hover .episode-admin-actions {
+      display: flex;
+    }
+
+    .episode-empty {
+      grid-column: 1/-1;
+      text-align: center;
+      padding: 50px 20px;
+      color: #666;
+      font-size: 0.95rem;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+      padding: 16px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: #161616;
+      border-radius: 28px;
+      max-width: 480px;
+      width: 100%;
+      padding: 24px 20px;
+      border: 1px solid #2e2e2e;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.9);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal h3 {
+      font-size: 1.3rem;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .modal label {
+      display: block;
+      margin: 12px 0 4px 0;
+      font-weight: 500;
+      font-size: 0.8rem;
+      color: #bbb;
+    }
+
+    .modal label .optional {
+      color: #666;
+      font-weight: 400;
+      font-size: 0.7rem;
+    }
+
+    .modal input, .modal textarea, .modal select {
+      width: 100%;
+      padding: 10px 14px;
+      background: #0e0e0e;
+      border: 1px solid #2a2a2a;
+      border-radius: 20px;
+      color: white;
+      font-size: 0.85rem;
+      outline: none;
+      transition: 0.2s;
+    }
+
+    .modal input:focus, .modal textarea:focus {
+      border-color: #e50914;
+    }
+
+    .modal .image-upload-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .modal .image-upload-group input[type="text"] {
+      flex: 1;
+      min-width: 120px;
+    }
+
+    .modal .image-upload-group .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 20px;
+      padding: 8px 16px;
+      cursor: pointer;
+      color: #aaa;
+      font-size: 0.8rem;
+      white-space: nowrap;
+    }
+
+    .modal .image-upload-group .file-input-wrapper input[type="file"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .modal .image-upload-group .file-input-wrapper:hover {
+      background: #2a2a2a;
+      border-color: #e50914;
+    }
+
+    .modal .image-preview {
+      margin-top: 8px;
+      max-width: 100%;
+      max-height: 120px;
+      border-radius: 12px;
+      border: 1px solid #2a2a2a;
+      display: none;
+      object-fit: cover;
+    }
+
+    .modal .image-preview.show {
+      display: block;
+    }
+
+    .modal .genre-select-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .modal .genre-select-group select {
+      flex: 1;
+      min-width: 100px;
+    }
+
+    .modal .genre-select-group .add-genre-btn {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      color: #aaa;
+      padding: 8px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: 0.2s;
+      white-space: nowrap;
+    }
+
+    .modal .genre-select-group .add-genre-btn:hover {
+      background: #2a2a2a;
+      border-color: #e50914;
+      color: white;
+    }
+
+    .modal .genre-tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .modal .genre-tag-item {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 30px;
+      padding: 2px 12px 2px 14px;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #ccc;
+    }
+
+    .modal .genre-tag-item .remove-genre-tag {
+      background: transparent;
+      border: none;
+      color: #888;
+      cursor: pointer;
+      font-size: 0.7rem;
+      padding: 0 2px;
+    }
+
+    .modal .genre-tag-item .remove-genre-tag:hover {
+      color: #e50914;
+    }
+
+    .modal .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 12px 0 4px 0;
+      padding: 8px 0;
+    }
+
+    .modal .checkbox-group input[type="checkbox"] {
+      width: 22px;
+      height: 22px;
+      accent-color: #e50914;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .modal .checkbox-group label {
+      margin: 0;
+      cursor: pointer;
+      font-size: 0.9rem;
+      color: #ddd;
+    }
+
+    .modal .row-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      justify-content: flex-end;
+    }
+
+    .modal .row-buttons button {
+      padding: 8px 22px;
+      border-radius: 40px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 0.85rem;
+    }
+
+    .modal .btn-primary {
+      background: #e50914;
+      color: white;
+    }
+    .modal .btn-primary:hover {
+      background: #f40612;
+    }
+
+    .modal .btn-secondary {
+      background: #2a2a2a;
+      color: #ccc;
+    }
+    .modal .btn-secondary:hover {
+      background: #3a3a3a;
+    }
+
+    .modal .btn-danger {
+      background: #3a1414;
+      color: #e08080;
+      border: 1px solid #5a1a1a;
+    }
+    .modal .btn-danger:hover {
+      background: #551a1a;
+    }
+
+    .modal .meta-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .modal .meta-row > div {
+      flex: 1;
+    }
+
+    .modal-wide {
+      max-width: 700px !important;
+    }
+
+    .season-manager {
+      background: #0e0e0e;
+      padding: 14px;
+      border-radius: 14px;
+      margin-bottom: 12px;
+      border: 1px solid #2a2a2a;
+    }
+
+    .season-manager .season-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .season-manager .season-header strong {
+      font-size: 1rem;
+    }
+
+    .episode-manager-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #141414;
+      padding: 6px 12px;
+      border-radius: 8px;
+      margin: 4px 0;
+    }
+
+    .episode-manager-item span {
+      font-size: 0.85rem;
+    }
+
+    .episode-form-group {
+      margin-bottom: 12px;
+    }
+
+    .episode-form-group label {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: 500;
+      font-size: 0.8rem;
+      color: #bbb;
+    }
+
+    .episode-form-group label .required {
+      color: #e50914;
+      font-weight: 700;
+    }
+
+    .episode-form-group label .optional {
+      color: #666;
+      font-weight: 400;
+      font-size: 0.7rem;
+    }
+
+    .episode-form-group input,
+    .episode-form-group textarea {
+      width: 100%;
+      padding: 10px 14px;
+      background: #0e0e0e;
+      border: 1px solid #2a2a2a;
+      border-radius: 20px;
+      color: white;
+      font-size: 0.85rem;
+      outline: none;
+      transition: 0.2s;
+    }
+
+    .episode-form-group input:focus,
+    .episode-form-group textarea:focus {
+      border-color: #e50914;
+    }
+
+    .episode-form-group .image-upload-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .episode-form-group .image-upload-group input[type="text"] {
+      flex: 1;
+      min-width: 120px;
+    }
+
+    .episode-form-group .image-upload-group .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 20px;
+      padding: 8px 16px;
+      cursor: pointer;
+      color: #aaa;
+      font-size: 0.8rem;
+      white-space: nowrap;
+    }
+
+    .episode-form-group .image-upload-group .file-input-wrapper input[type="file"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .episode-form-group .image-upload-group .file-input-wrapper:hover {
+      background: #2a2a2a;
+      border-color: #e50914;
+    }
+
+    .episode-form-group .image-preview {
+      margin-top: 8px;
+      max-width: 100%;
+      max-height: 120px;
+      border-radius: 12px;
+      border: 1px solid #2a2a2a;
+      display: none;
+      object-fit: cover;
+    }
+
+    .episode-form-group .image-preview.show {
+      display: block;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1a1a1a;
+      border: 1px solid #333;
+      padding: 10px 24px;
+      border-radius: 40px;
+      color: #eee;
+      font-size: 0.85rem;
+      z-index: 999999;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      opacity: 0;
+      transition: 0.3s;
+      pointer-events: none;
+      max-width: 90%;
+      text-align: center;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+
+    .save-indicator {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      background: #0d3b1a;
+      color: #7fdb8a;
+      padding: 8px 16px;
+      border-radius: 30px;
+      font-size: 0.7rem;
+      border: 1px solid #1a6b2a;
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 999;
+      pointer-events: none;
+    }
+
+    .save-indicator.show {
+      opacity: 1;
+    }
+
+    .save-indicator.error {
+      background: #3a1414;
+      color: #e08080;
+      border-color: #5a1a1a;
+    }
+
+    .storage-status {
+      position: fixed;
+      bottom: 80px;
+      left: 20px;
+      background: #1a1a1a;
+      color: #888;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.6rem;
+      border: 1px solid #2a2a2a;
+      z-index: 999;
+    }
+
+    @media (max-width: 600px) {
+      .hero-carousel { height: 150px; }
+      .movie-card { min-width: 110px; max-width: 120px; }
+      .movie-card img { height: 80px; }
+      .login-box { padding: 20px 16px; }
+      .video-player-overlay .video-wrapper { padding: 10px; }
+      .modal .meta-row { flex-direction: column; gap: 0; }
+      .storage-status { display: none; }
+      .episode-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .episode-header img {
+        width: 100%;
+        height: 160px;
+      }
+      .episode-grid {
+        grid-template-columns: 1fr;
+      }
+      .episode-card .episode-play-icon {
+        opacity: 1;
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TELA DE LOGIN -->
+<div class="login-screen" id="loginScreen">
+  <div class="logo-big">
+    <i class="fas fa-play-circle"></i> NyF Stream
+  </div>
+  <div class="login-box">
+    <h2><i class="fas fa-user-astronaut"></i> Quem está assistindo?</h2>
+    <input type="text" id="loginNameInput" placeholder="Digite seu nome..." value="ADM">
+    <button id="loginConfirmBtn">Entrar</button>
+    <div class="hint">Digite <strong>ADM</strong> para editar o catálogo</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app-container" id="appContainer">
+
+  <header class="navbar">
+    <div class="logo-small">
+      <i class="fas fa-play-circle"></i> NyF
+    </div>
+    <div class="user-badge">
+      <i class="fas fa-user-circle"></i>
+      <span id="userDisplay">Convidado</span>
+      <button id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+  </header>
+
+  <div class="search-section">
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input type="text" id="searchInput" placeholder="Buscar filme/série...">
+    </div>
+    <div class="filter-genre">
+      <i class="fas fa-tags"></i>
+      <select id="genreFilter">
+        <option value="todos">Todos</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="hero-carousel" id="heroCarousel">
+    <div class="hero-track" id="heroTrack"></div>
+    <div class="hero-dots" id="heroDots"></div>
+    <button class="hero-edit-btn" id="heroEditBtn"><i class="fas fa-edit"></i> Editar destaques</button>
+  </div>
+
+  <div class="admin-actions hidden" id="adminPanel">
+    <button id="addMovieBtn"><i class="fas fa-plus-circle"></i> Adicionar</button>
+    <button id="editOrderBtn"><i class="fas fa-arrows-alt-h"></i> Ordem catálogos</button>
+    <button id="deleteCatalogBtn" class="danger"><i class="fas fa-trash-alt"></i> Excluir catálogo</button>
+    <button id="addCatalogBtn"><i class="fas fa-folder-plus"></i> Novo catálogo</button>
+    <button id="manageGenresBtn"><i class="fas fa-tags"></i> Gêneros</button>
+    <button id="transferMovieBtn"><i class="fas fa-exchange-alt"></i> Transferir</button>
+    <button id="manageEpisodesBtn"><i class="fas fa-list"></i> Gerenciar séries</button>
+    <button id="saveDataBtn" class="save-btn"><i class="fas fa-save"></i> Salvar</button>
+  </div>
+
+  <section class="catalog-section" id="catalogSection"></section>
+</div>
+
+<!-- INDICADORES -->
+<div class="save-indicator" id="saveIndicator">✓ Dados salvos</div>
+<div class="storage-status" id="storageStatus">💾 IndexedDB</div>
+
+<!-- TELA DE VÍDEO -->
+<div class="video-player-overlay" id="videoPlayerOverlay">
+  <button class="close-video" id="closeVideoBtn"><i class="fas fa-times"></i></button>
+  <div class="video-wrapper">
+    <iframe id="videoIframe" src="" allowfullscreen></iframe>
+    <div class="video-title" id="videoTitle">Título do Filme</div>
+  </div>
+</div>
+
+<!-- TELA DE EPISÓDIOS -->
+<div class="episode-overlay" id="episodeOverlay">
+  <button class="close-episode" id="closeEpisodeBtn"><i class="fas fa-times"></i></button>
+  <div class="episode-container">
+    <div class="episode-header" id="episodeHeader">
+      <img id="episodeSeriesCover" src="" alt="Capa da série">
+      <div class="episode-header-info">
+        <h2 id="episodeSeriesName">Nome da Série</h2>
+        <p id="episodeSeriesDesc">Sinopse da série...</p>
+        <div class="episode-meta">
+          <span id="episodeSeriesYear">2024</span>
+          <span id="episodeSeriesGenres">Ação, Aventura</span>
+          <span class="series-badge-large">SÉRIE</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="season-filter" id="seasonFilter">
+      <button class="season-btn active" data-season="all">Todas</button>
+    </div>
+    
+    <div class="episode-grid" id="episodeGrid"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- MODAL DE FILME -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalContent">
+    <h3 id="modalTitle"><i class="fas fa-film"></i> Filme</h3>
+    <form id="movieForm">
+      <label>Nome <span style="color:#e50914;">*</span></label>
+      <input type="text" id="movieName" placeholder="Ex: Inception" required>
+      
+      <div class="checkbox-group">
+        <input type="checkbox" id="movieIsSeries">
+        <label for="movieIsSeries">Este conteúdo é uma série/minissérie</label>
+      </div>
+      
+      <label>Gêneros (máx. 3)</label>
+      <div class="genre-select-group">
+        <select id="movieGenreSelect"></select>
+        <button type="button" class="add-genre-btn" id="addGenreTagBtn"><i class="fas fa-plus"></i> Adicionar</button>
+      </div>
+      <div class="genre-tags-container" id="genreTagsContainer"></div>
+      <input type="hidden" id="movieGenres" value="">
+      
+      <label>Descrição <span class="optional">(opcional)</span></label>
+      <textarea id="movieDesc" placeholder="Sinopse..."></textarea>
+      
+      <div class="meta-row">
+        <div>
+          <label>Ano <span class="optional">(opcional)</span></label>
+          <input type="number" id="movieYear" placeholder="2024" min="1900" max="2100">
+        </div>
+        <div>
+          <label>Idioma <span class="optional">(opcional)</span></label>
+          <input type="text" id="movieLanguage" placeholder="Português, Inglês...">
+        </div>
+      </div>
+      
+      <label>Capa <span class="optional">(opcional)</span></label>
+      <div class="image-upload-group">
+        <input type="text" id="movieCover" placeholder="URL da imagem">
+        <div class="file-input-wrapper">
+          <i class="fas fa-upload"></i> Escolher foto
+          <input type="file" id="movieCoverFile" accept="image/*">
+        </div>
+      </div>
+      <img id="movieCoverPreview" class="image-preview" alt="Prévia da capa">
+      
+      <label>Vídeo (link) <span class="optional">(opcional)</span></label>
+      <input type="text" id="movieVideo" placeholder="https://youtube.com/embed/... ou link direto">
+      
+      <div class="row-buttons">
+        <button type="button" class="btn-secondary" id="modalCancel">Cancelar</button>
+        <button type="submit" class="btn-primary" id="modalSave">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL DE EPISÓDIO (CRIAR/EDITAR) -->
+<div class="modal-overlay" id="episodeFormModalOverlay">
+  <div class="modal">
+    <h3 id="episodeFormTitle"><i class="fas fa-plus-circle"></i> Adicionar Episódio</h3>
+    <form id="episodeForm">
+      <div class="episode-form-group">
+        <label>Nome do episódio <span class="required">*</span></label>
+        <input type="text" id="episodeFormName" placeholder="Ex: O Começo" required>
+      </div>
+      
+      <div class="episode-form-group">
+        <label>Sinopse <span class="optional">(opcional)</span></label>
+        <textarea id="episodeFormDesc" placeholder="Sinopse do episódio..."></textarea>
+      </div>
+      
+      <div class="episode-form-group">
+        <label>Capa <span class="optional">(opcional)</span></label>
+        <div class="image-upload-group">
+          <input type="text" id="episodeFormCover" placeholder="URL da imagem">
+          <div class="file-input-wrapper">
+            <i class="fas fa-upload"></i> Escolher foto
+            <input type="file" id="episodeFormCoverFile" accept="image/*">
+          </div>
+        </div>
+        <img id="episodeFormCoverPreview" class="image-preview" alt="Prévia da capa">
+      </div>
+      
+      <div class="episode-form-group">
+        <label>Vídeo (link) <span class="optional">(opcional)</span></label>
+        <input type="text" id="episodeFormVideo" placeholder="https://youtube.com/embed/...">
+      </div>
+      
+      <input type="hidden" id="episodeFormSeriesId">
+      <input type="hidden" id="episodeFormSeasonNum">
+      <input type="hidden" id="episodeFormEpisodeId">
+      
+      <div class="row-buttons">
+        <button type="button" class="btn-secondary" id="episodeFormCancel">Cancelar</button>
+        <button type="submit" class="btn-primary" id="episodeFormSave">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL DE EDIÇÃO DE CATÁLOGO -->
+<div class="modal-overlay" id="editCatalogModalOverlay">
+  <div class="modal">
+    <h3><i class="fas fa-folder-open"></i> Editar Catálogo</h3>
+    <form id="editCatalogForm">
+      <label>Nome do catálogo</label>
+      <input type="text" id="editCatalogName" placeholder="Digite o novo nome" required>
+      <input type="hidden" id="editCatalogId">
+      <div class="row-buttons">
+        <button type="button" class="btn-secondary" id="editCatalogCancel">Cancelar</button>
+        <button type="submit" class="btn-primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL DE TRANSFERÊNCIA -->
+<div class="modal-overlay" id="transferModalOverlay">
+  <div class="modal">
+    <h3><i class="fas fa-exchange-alt"></i> Transferir</h3>
+    <form id="transferForm">
+      <label>Conteúdo</label>
+      <select id="transferMovieSelect" required></select>
+      
+      <label>Catálogo de origem</label>
+      <select id="transferFromCatalog" required></select>
+      
+      <label>Catálogo de destino</label>
+      <select id="transferToCatalog" required></select>
+      
+      <div class="row-buttons">
+        <button type="button" class="btn-secondary" id="transferCancel">Cancelar</button>
+        <button type="submit" class="btn-primary">Transferir</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL DE DESTAQUES -->
+<div class="modal-overlay" id="heroModalOverlay">
+  <div class="modal">
+    <h3><i class="fas fa-star"></i> Editar Destaques</h3>
+    <div id="heroList"></div>
+    <button class="btn-primary" id="addHeroBtn" style="width:100%;padding:10px;margin:10px 0;border:none;border-radius:30px;cursor:pointer;">
+      <i class="fas fa-plus"></i> Adicionar destaque
+    </button>
+    <div class="row-buttons">
+      <button class="btn-secondary" id="heroModalClose">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE GÊNEROS -->
+<div class="modal-overlay" id="genreModalOverlay">
+  <div class="modal">
+    <h3><i class="fas fa-tags"></i> Gerenciar Gêneros</h3>
+    <div id="genreList"></div>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <input type="text" id="newGenreInput" placeholder="Novo gênero" style="flex:1;padding:10px 14px;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:20px;color:white;outline:none;">
+      <button id="addGenreBtn" class="btn-primary" style="padding:10px 18px;border:none;border-radius:30px;cursor:pointer;">Adicionar</button>
+    </div>
+    <div class="row-buttons">
+      <button class="btn-secondary" id="genreModalClose">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE GERENCIAMENTO DE EPISÓDIOS -->
+<div class="modal-overlay" id="episodeManagerOverlay">
+  <div class="modal modal-wide">
+    <h3><i class="fas fa-list"></i> Gerenciar Séries</h3>
+    <div id="episodeManagerContent"></div>
+    <div class="row-buttons">
+      <button class="btn-secondary" id="episodeManagerClose">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ======================================================================
+// ====================== INDEXEDDB =====================================
+// ======================================================================
+
+const DB_NAME = 'NyFStreamDB';
+const STORE_NAME = 'appData';
+const DB_VERSION = 1;
+
+let db = null;
+let saveTimeout = null;
+
+function openDatabase() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    
+    request.onupgradeneeded = function(event) {
+      const database = event.target.result;
+      if (!database.objectStoreNames.contains(STORE_NAME)) {
+        database.createObjectStore(STORE_NAME, { keyPath: 'id' });
+      }
+    };
+    
+    request.onsuccess = function(event) {
+      db = event.target.result;
+      resolve(db);
+    };
+    
+    request.onerror = function(event) {
+      reject(event.target.error);
+    };
+  });
+}
+
+function saveToDB(data) {
+  return new Promise((resolve, reject) => {
+    if (!db) {
+      reject(new Error('Database not open'));
+      return;
+    }
+    
+    const transaction = db.transaction([STORE_NAME], 'readwrite');
+    const store = transaction.objectStore(STORE_NAME);
+    const request = store.put({ id: 'main', data: data });
+    
+    request.onsuccess = function() {
+      resolve();
+    };
+    
+    request.onerror = function(event) {
+      reject(event.target.error);
+    };
+  });
+}
+
+function loadFromDB() {
+  return new Promise((resolve, reject) => {
+    if (!db) {
+      reject(new Error('Database not open'));
+      return;
+    }
+    
+    const transaction = db.transaction([STORE_NAME], 'readonly');
+    const store = transaction.objectStore(STORE_NAME);
+    const request = store.get('main');
+    
+    request.onsuccess = function() {
+      resolve(request.result ? request.result.data : null);
+    };
+    
+    request.onerror = function(event) {
+      reject(event.target.error);
+    };
+  });
+}
+
+// ======================================================================
+// ====================== DADOS =========================================
+// ======================================================================
+
+const GENRES_KEY = 'nyf_genres';
+
+// FILMES REAIS DISPONÍVEIS NO YOUTUBE (COMPLETOS E DUBLADOS)
+const DEFAULT_MOVIES = [
+  { 
+    name: 'Motoqueiro Fantasma', 
+    genres: ['Ação', 'Fantasia'], 
+    desc: 'O dublê Johnny Blaze faz um pacto com o diabo e se torna o Motoqueiro Fantasma, um caçador de demônios com poderes sobrenaturais.', 
+    year: '2007', 
+    language: 'Português',
+    cover: 'https://image.tmdb.org/t/p/w500/5Mq1j5NwLrXfZ7eJg0s4fG4qR8w.jpg',
+    video: 'https://www.youtube.com/embed/MhWb5fa1nGM'
+  },
+  { 
+    name: 'O Exterminador do Futuro 2', 
+    genres: ['Ação', 'Ficção Científica'], 
+    desc: 'O ciborgue T-800 retorna para proteger John Connor, o futuro líder da resistência humana, contra o T-1000, um assassino líquido.', 
+    year: '1991', 
+    language: 'Português',
+    cover: 'https://image.tmdb.org/t/p/w500/8QoufRjYVpJzZgVxhP8gJvP4g3p.jpg',
+    video: 'https://www.youtube.com/embed/9MJoRc1Z3-M'
+  },
+  { 
+    name: 'Matrix', 
+    genres: ['Ação', 'Ficção Científica'], 
+    desc: 'O programador Neo descobre que a realidade é uma simulação criada por máquinas e se junta à resistência para libertar a humanidade.', 
+    year: '1999', 
+    language: 'Português',
+    cover: 'https://image.tmdb.org/t/p/w500/f89U3ADr1oTB2hqM6W0Jg9KvqCq.jpg',
+    video: 'https://www.youtube.com/embed/vKQi3bBA1y8'
+  },
+  { 
+    name: 'Gladiador', 
+    genres: ['Ação', 'Drama'], 
+    desc: 'O general romano Máximo é traído e se torna gladiador, buscando vingança contra o imperador que assassinou sua família.', 
+    year: '2000', 
+    language: 'Português',
+    cover: 'https://image.tmdb.org/t/p/w500/8WUVHem3YJQyqyWp9cNkP6xWzYz.jpg',
+    video: 'https://www.youtube.com/embed/owK1qxDselE'
+  },
+  { 
+    name: 'O Senhor dos Anéis - A Sociedade do Anel', 
+    genres: ['Aventura', 'Fantasia'], 
+    desc: 'O hobbit Frodo deve destruir o Um Anel para impedir que Sauron domine a Terra Média.', 
+    year: '2001', 
+    language: 'Português',
+    cover: 'https://image.tmdb.org/t/p/w500/6dC6w3WqL0bLwYJ6gKqKq2VnU1p.jpg',
+    video: 'https://www.youtube.com/embed/V75dMMIW2B4'
+  },
+  { 
+    name: 'Piratas do Caribe - A Maldição do Pérola Negra', 
+    genres: ['Aventura', 'Fantasia'], 
+    desc: 'O pirata Jack Sparrow se une a Will Turner para resgatar Elizabeth e quebrar a maldição que transforma os tripulantes em esqueletos.', 
+    year: '2003', 
+    language: 'Português',
+    cover: 'https://image.tmdb.org/t/p/w500/z8zGq8QwH6QxJh6Z5JxXGJw5b7Q.jpg',
+    video: 'https://www.youtube.com/embed/naQr0uTrH_s'
+  },
+  { 
+    name: 'Velozes e Furiosos', 
+    genres: ['Ação', 'Crime'], 
+    desc: 'Um policial disfarçado se infiltra no mundo das corridas de rua para investigar roubos de caminhões.', 
+    year: '2001', 
+    language: 'Português',
+    cover: 'https://image.tmdb.org/t/p/w500/8QvJgQjZnZvWgFjLQzXQyjMpW7T.jpg',
+    video: 'https://www.youtube.com/embed/2TAOizOnNPo'
+  },
+  { 
+    name: 'Indiana Jones e os Caçadores da Arca Perdida', 
+    genres: ['Aventura', 'Ação'], 
+    desc: 'O arqueólogo Indiana Jones busca a Arca da Aliança antes dos nazistas.', 
+    year: '1981', 
+    language: 'Português',
+    cover: 'https://image.tmdb.org/t/p/w500/7LpD1pLqFkS4zVgJq8vNq8rHk4.jpg',
+    video: 'https://www.youtube.com/embed/XkkzKHCx154'
+  },
+  { 
+    name: 'Homem de Ferro', 
+    genres: ['Ação', 'Ficção Científica'], 
+    desc: 'O bilionário Tony Stark constrói uma armadura tecnológica para escapar de seus captores e se torna o Homem de Ferro.', 
+    year: '2008', 
+    language: 'Português',
+    cover: 'https://image.tmdb.org/t/p/w500/78lP8g3kGhjLZJxI4kGg9H0mZ7E.jpg',
+    video: 'https://www.youtube.com/embed/8hYlB38asDY'
+  },
+  { 
+    name: 'Batman - O Cavaleiro das Trevas', 
+    genres: ['Ação', 'Suspense'], 
+    desc: 'O Batman enfrenta o Coringa, que quer mergulhar Gotham City no caos.', 
+    year: '2008', 
+    language: 'Português',
+    cover: 'https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg',
+    video: 'https://www.youtube.com/embed/EXeTwQWrcwY'
+  },
+  { 
+    name: 'Jurassic Park - Parque dos Dinossauros', 
+    genres: ['Aventura', 'Ficção Científica'], 
+    desc: 'Em uma ilha remota, um parque com dinossauros geneticamente recriados entra em colapso.', 
+    year: '1993', 
+    language: 'Português',
+    cover: 'https://image.tmdb.org/t/p/w500/7R0KJqYq6w6vJtVjKjQv6jMhG8R.jpg',
+    video: 'https://www.youtube.com/embed/QWBKEmWWL38'
+  },
+  { 
+    name: 'De Volta para o Futuro', 
+    genres: ['Aventura', 'Comédia'], 
+    desc: 'Marty McFly viaja acidentalmente para 1955 em um DeLorean modificado.', 
+    year: '1985', 
+    language: 'Português',
+    cover: 'https://image.tmdb.org/t/p/w500/7Q8vRwQrZxRwQxQqJw8rJv6kX0F.jpg',
+    video: 'https://www.youtube.com/embed/qvsgGtivCgs'
+  },
+  { 
+    name: 'O Rei Leão', 
+    genres: ['Animação', 'Aventura'], 
+    desc: 'O leão Simba foge do reino após a morte de seu pai, mas precisa retornar para reclamar seu lugar como rei.', 
+    year: '1994', 
+    language: 'Português',
+    cover: 'https://image.tmdb.org/t/p/w500/4Mx9sZJwK8cVgZ5JQ3hVj8p3kQ6.jpg',
+    video: 'https://www.youtube.com/embed/4sj1MT05lAA'
+  },
+  { 
+    name: 'Titanic', 
+    genres: ['Drama', 'Romance'], 
+    desc: 'O romance entre a aristocrata Rose e o aventureiro Jack a bordo do navio Titanic.', 
+    year: '1997', 
+    language: 'Português',
+    cover: 'https://image.tmdb.org/t/p/w500/9xjZS2rlVxm8SFx8kP3LbyQ7CLD.jpg',
+    video: 'https://www.youtube.com/embed/zCy5WQ9S4c0'
+  },
+  { 
+    name: 'Os Vingadores', 
+    genres: ['Ação', 'Ficção Científica'], 
+    desc: 'Os heróis mais poderosos da Terra se unem para enfrentar Loki e seu exército alienígena.', 
+    year: '2012', 
+    language: 'Português',
+    cover: 'https://image.tmdb.org/t/p/w500/7Q8vRwQrZxRwQxQqJw8rJv6kX0F.jpg',
+    video: 'https://www.youtube.com/embed/eOrNdBpGMv8'
+  },
+  { 
+    name: 'O Último Samurai', 
+    genres: ['Ação', 'Drama'], 
+    desc: 'Um capitão americano é capturado por samurais e acaba se apaixonando pela cultura dos guerreiros.', 
+    year: '2003', 
+    language: 'Português',
+    cover: 'https://image.tmdb.org/t/p/w500/4x9sZJwK8cVgZ5JQ3hVj8p3kQ6.jpg',
+    video: 'https://www.youtube.com/embed/T5yJfG4yLqQ'
+  },
+  { 
+    name: 'Duro de Matar', 
+    genres: ['Ação', 'Suspense'], 
+    desc: 'O policial John McClane tenta salvar sua esposa e outros reféns de terroristas.', 
+    year: '1988', 
+    language: 'Português',
+    cover: 'https://image.tmdb.org/t/p/w500/7Q8vRwQrZxRwQxQqJw8rJv6kX0F.jpg',
+    video: 'https://www.youtube.com/embed/2TQ-pOvI6Xo'
+  },
+  { 
+    name: 'O Predador', 
+    genres: ['Ação', 'Terror'], 
+    desc: 'Uma equipe de forças especiais é caçada por uma criatura alienígena em uma selva.', 
+    year: '1987', 
+    language: 'Português',
+    cover: 'https://image.tmdb.org/t/p/w500/4x9sZJwK8cVgZ5JQ3hVj8p3kQ6.jpg',
+    video: 'https://www.youtube.com/embed/X4rjNQeYhIY'
+  }
+];
+
+function getDefaultGenres() {
+  const allGenres = new Set();
+  DEFAULT_MOVIES.forEach(m => m.genres.forEach(g => allGenres.add(g)));
+  return [...allGenres];
+}
+
+function loadGenres() {
+  try {
+    const stored = localStorage.getItem(GENRES_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length) return parsed;
+    }
+  } catch (e) {}
+  return getDefaultGenres();
+}
+
+function saveGenres(genres) {
+  localStorage.setItem(GENRES_KEY, JSON.stringify(genres));
+}
+
+let genres = loadGenres();
+let data = null;
+let currentUser = 'Convidado';
+let isAdmin = false;
+
+function getDefaultData() {
+  const catalogs = [];
+  const genreMap = {};
+  
+  DEFAULT_MOVIES.forEach(movie => {
+    const mainGenre = movie.genres[0] || 'Geral';
+    if (!genreMap[mainGenre]) {
+      genreMap[mainGenre] = [];
+    }
+    genreMap[mainGenre].push({
+      id: 'm' + Date.now() + Math.random().toString(36).substr(2, 4),
+      name: movie.name,
+      genres: movie.genres || [mainGenre],
+      desc: movie.desc,
+      year: movie.year,
+      language: movie.language,
+      cover: movie.cover,
+      video: movie.video,
+      isSeries: false,
+      seasons: []
+    });
+  });
+
+  let order = 0;
+  for (const [genre, movies] of Object.entries(genreMap)) {
+    catalogs.push({
+      id: 'c' + Date.now() + order,
+      name: genre,
+      order: order++,
+      movies: movies
+    });
+  }
+
+  const heroSlides = DEFAULT_MOVIES.slice(0, 6).map(m => ({
+    title: m.name,
+    desc: m.desc.substring(0, 60) + '...',
+    img: m.cover
+  }));
+
+  return { catalogs, heroSlides };
+}
+
+// ======================================================================
+// ====================== SALVAMENTO ===================================
+// ======================================================================
+
+async function saveDataToDB() {
+  if (!data) return;
+  
+  try {
+    await saveToDB(data);
+    showSaveIndicator('✓ Dados salvos com sucesso!', false);
+  } catch (error) {
+    console.error('Erro ao salvar:', error);
+    showSaveIndicator('❌ Erro ao salvar! Verifique o console.', true);
+  }
+}
+
+function showSaveIndicator(message, isError = false) {
+  const indicator = document.getElementById('saveIndicator');
+  indicator.textContent = message;
+  indicator.className = 'save-indicator show';
+  if (isError) indicator.classList.add('error');
+  
+  clearTimeout(indicator._timeout);
+  indicator._timeout = setTimeout(() => {
+    indicator.classList.remove('show');
+  }, 3000);
+}
+
+function scheduleSave() {
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(() => {
+    saveDataToDB();
+  }, 500);
+}
+
+// ======================================================================
+// ====================== LOAD ==========================================
+// ======================================================================
+
+async function loadData() {
+  try {
+    const loaded = await loadFromDB();
+    if (loaded && loaded.catalogs && loaded.heroSlides) {
+      data = loaded;
+      return;
+    }
+  } catch (e) {
+    console.warn('Erro ao carregar do IndexedDB:', e);
+  }
+  
+  try {
+    const stored = localStorage.getItem('nyf_stream_data');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed && parsed.catalogs && parsed.heroSlides) {
+        data = parsed;
+        await saveToDB(data);
+        localStorage.removeItem('nyf_stream_data');
+        return;
+      }
+    }
+  } catch (e) {}
+  
+  data = getDefaultData();
+  await saveToDB(data);
+}
+
+// ======================================================================
+// ====================== RENDER ========================================
+// ======================================================================
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function renderAll() {
+  renderHero();
+  renderCatalogs();
+  applySearchAndFilter();
+  updateAdminPanel();
+  populateGenreFilter();
+  scheduleSave();
+}
+
+function renderHero() {
+  const track = document.getElementById('heroTrack');
+  const dots = document.getElementById('heroDots');
+  const editBtn = document.getElementById('heroEditBtn');
+  
+  if (isAdmin) {
+    editBtn.classList.add('visible');
+  } else {
+    editBtn.classList.remove('visible');
+  }
+
+  if (!data.heroSlides.length) {
+    track.innerHTML = `<div class="hero-slide" style="background:#181818; justify-content:center; align-items:center;"><div class="hero-text"><h2>Sem destaques</h2><p>Adicione filmes em destaque</p></div></div>`;
+    dots.innerHTML = '';
+    return;
+  }
+  track.innerHTML = data.heroSlides.map((s) => `
+    <div class="hero-slide" style="background-image: url('${s.img || ''}'); background-color: #1f1f1f;">
+      <div class="hero-text">
+        <h2>${s.title || 'Destaque'}</h2>
+        <p>${s.desc || ''}</p>
+      </div>
+    </div>
+  `).join('');
+
+  dots.innerHTML = data.heroSlides.map((_, i) => `<span class="${i===0?'active':''}" data-index="${i}"></span>`).join('');
+  document.querySelectorAll('#heroDots span').forEach(dot => {
+    dot.addEventListener('click', function() {
+      const idx = parseInt(this.dataset.index);
+      document.querySelectorAll('#heroDots span').forEach(d => d.classList.remove('active'));
+      this.classList.add('active');
+      document.getElementById('heroTrack').style.transform = `translateX(-${idx*100}%)`;
+    });
+  });
+}
+
+function renderCatalogs() {
+  const section = document.getElementById('catalogSection');
+  const sorted = [...data.catalogs].sort((a,b) => a.order - b.order);
+  section.innerHTML = sorted.map(cat => {
+    const moviesHtml = cat.movies.map((m, index) => {
+      const genreTags = (m.genres || [m.genre || 'Geral']).map(g => 
+        `<span class="genre-tag">${g}</span>`
+      ).join(' ');
+
+      const seriesBadge = m.isSeries ? `<span class="series-badge"><i class="fas fa-tv"></i> Série</span>` : '';
+
+      return `
+        <div class="movie-card" data-movieid="${m.id}" data-catalogid="${cat.id}" data-index="${index}">
+          ${seriesBadge}
+          <img src="${m.cover || 'https://via.placeholder.com/200x120/222/555?text=Sem+Capa'}" alt="${m.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/200x120/222/555?text=Erro'">
+          <div class="movie-info">
+            <h4>${m.name}</h4>
+            <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;">${genreTags}</div>
+            <div class="desc">${m.desc || ''}</div>
+            <div class="meta-info">
+              ${m.year ? `<span><i class="far fa-calendar-alt"></i> ${m.year}</span>` : ''}
+              ${m.language ? `<span><i class="fas fa-globe"></i> ${m.language}</span>` : ''}
+              ${m.isSeries ? `<span><i class="fas fa-tv"></i> ${m.seasons?.length || 0} T</span>` : ''}
+            </div>
+          </div>
+          <div class="edit-overlay ${isAdmin ? 'visible' : ''}">
+            <button class="edit-movie-btn" data-movieid="${m.id}" data-catalogid="${cat.id}"><i class="fas fa-edit"></i></button>
+            <button class="delete-movie-btn" data-movieid="${m.id}" data-catalogid="${cat.id}"><i class="fas fa-trash"></i></button>
+          </div>
+          <div class="order-controls ${isAdmin && cat.movies.length > 1 ? 'visible' : ''}">
+            <button class="move-movie-btn" data-movieid="${m.id}" data-catalogid="${cat.id}" data-direction="left" title="Mover para esquerda"><i class="fas fa-chevron-left"></i></button>
+            <span style="color:#666;font-size:0.6rem;">${index+1}/${cat.movies.length}</span>
+            <button class="move-movie-btn" data-movieid="${m.id}" data-catalogid="${cat.id}" data-direction="right" title="Mover para direita"><i class="fas fa-chevron-right"></i></button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="catalog-row" data-catalogid="${cat.id}">
+        <div class="catalog-header">
+          <h2>${cat.name}</h2>
+          <div class="header-actions">
+            ${isAdmin ? `<button class="edit-catalog-btn" data-catalogid="${cat.id}"><i class="fas fa-edit"></i> Editar</button>` : ''}
+            <span class="badge-count">${cat.movies.length}</span>
+          </div>
+        </div>
+        <div class="movie-grid">${moviesHtml}</div>
+      </div>
+    `;
+  }).join('');
+
+  // Event listeners
+  document.querySelectorAll('.movie-card').forEach(card => {
+    card.addEventListener('click', function(e) {
+      if (e.target.closest('.edit-overlay') || e.target.closest('.order-controls')) return;
+      
+      const movieId = this.dataset.movieid;
+      const catId = this.dataset.catalogid;
+      const catalog = data.catalogs.find(c => c.id === catId);
+      if (!catalog) return;
+      const movie = catalog.movies.find(m => m.id === movieId);
+      if (movie) {
+        if (movie.isSeries) {
+          openEpisodeView(movie);
+        } else {
+          openVideoPlayer(movie);
+        }
+      }
+    });
+  });
+
+  document.querySelectorAll('.edit-movie-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (!isAdmin) return;
+      const movieId = this.dataset.movieid;
+      const catId = this.dataset.catalogid;
+      const catalog = data.catalogs.find(c => c.id === catId);
+      if (!catalog) return;
+      const movie = catalog.movies.find(m => m.id === movieId);
+      if (movie) {
+        openModal(movie, catId);
+      }
+    });
+  });
+
+  document.querySelectorAll('.delete-movie-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (!isAdmin) return;
+      const movieId = this.dataset.movieid;
+      const catId = this.dataset.catalogid;
+      if (confirm('Excluir este conteúdo permanentemente?')) {
+        const catalog = data.catalogs.find(c => c.id === catId);
+        if (catalog) {
+          const idx = catalog.movies.findIndex(m => m.id === movieId);
+          if (idx > -1) {
+            catalog.movies.splice(idx, 1);
+            renderAll();
+            showToast('Conteúdo removido.');
+          }
+        }
+      }
+    });
+  });
+
+  document.querySelectorAll('.move-movie-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (!isAdmin) return;
+      const movieId = this.dataset.movieid;
+      const catId = this.dataset.catalogid;
+      const direction = this.dataset.direction;
+      const catalog = data.catalogs.find(c => c.id === catId);
+      if (!catalog) return;
+      const currentIndex = catalog.movies.findIndex(m => m.id === movieId);
+      if (currentIndex === -1) return;
+      
+      let newIndex = direction === 'left' ? currentIndex - 1 : currentIndex + 1;
+      if (newIndex < 0 || newIndex >= catalog.movies.length) return;
+      
+      const temp = catalog.movies[currentIndex];
+      catalog.movies[currentIndex] = catalog.movies[newIndex];
+      catalog.movies[newIndex] = temp;
+      
+      renderAll();
+      showToast(`Movido ${direction === 'left' ? 'para a esquerda' : 'para a direita'}`);
+    });
+  });
+
+  document.querySelectorAll('.edit-catalog-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (!isAdmin) return;
+      const catalogId = this.dataset.catalogid;
+      const catalog = data.catalogs.find(c => c.id === catalogId);
+      if (catalog) {
+        openEditCatalogModal(catalog);
+      }
+    });
+  });
+}
+
+// ======================================================================
+// ====================== PLAYER DE VÍDEO ===============================
+// ======================================================================
+
+function openVideoPlayer(movie) {
+  const overlay = document.getElementById('videoPlayerOverlay');
+  const iframe = document.getElementById('videoIframe');
+  const title = document.getElementById('videoTitle');
+  
+  let videoUrl = movie.video || '';
+  if (videoUrl.includes('youtube.com/watch') || videoUrl.includes('youtu.be')) {
+    const videoId = extractYouTubeId(videoUrl);
+    if (videoId) {
+      videoUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+    }
+  } else if (videoUrl.includes('youtube.com/embed')) {
+    if (!videoUrl.includes('autoplay')) {
+      videoUrl += (videoUrl.includes('?') ? '&' : '?') + 'autoplay=1';
+    }
+  }
+  
+  iframe.src = videoUrl || 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1';
+  title.textContent = movie.name || 'Filme';
+  overlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function extractYouTubeId(url) {
+  const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/;
+  const match = url.match(regex);
+  return match ? match[1] : null;
+}
+
+function closeVideoPlayer() {
+  const overlay = document.getElementById('videoPlayerOverlay');
+  const iframe = document.getElementById('videoIframe');
+  iframe.src = '';
+  overlay.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('closeVideoBtn').addEventListener('click', closeVideoPlayer);
+document.getElementById('videoPlayerOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeVideoPlayer();
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    if (document.getElementById('videoPlayerOverlay').classList.contains('active')) {
+      closeVideoPlayer();
+    }
+    if (document.getElementById('episodeOverlay').classList.contains('active')) {
+      closeEpisodeView();
+    }
+    if (document.getElementById('episodeFormModalOverlay').classList.contains('active')) {
+      document.getElementById('episodeFormModalOverlay').classList.remove('active');
+    }
+  }
+});
+
+// ======================================================================
+// ====================== TELA DE EPISÓDIOS =============================
+// ======================================================================
+
+let currentSeries = null;
+let currentSeasonFilter = 'all';
+
+function openEpisodeView(series) {
+  currentSeries = series;
+  const overlay = document.getElementById('episodeOverlay');
+  
+  document.getElementById('episodeSeriesCover').src = series.cover || 'https://via.placeholder.com/200x120/222/555?text=Sem+Capa';
+  document.getElementById('episodeSeriesName').textContent = series.name;
+  document.getElementById('episodeSeriesDesc').textContent = series.desc || '';
+  document.getElementById('episodeSeriesYear').textContent = series.year || 'Ano não informado';
+  document.getElementById('episodeSeriesGenres').textContent = (series.genres || ['Geral']).join(', ');
+  
+  renderSeasonButtons(series);
+  renderEpisodes(series, 'all');
+  
+  overlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeEpisodeView() {
+  document.getElementById('episodeOverlay').classList.remove('active');
+  document.body.style.overflow = '';
+  currentSeries = null;
+}
+
+document.getElementById('closeEpisodeBtn').addEventListener('click', closeEpisodeView);
+document.getElementById('episodeOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeEpisodeView();
+});
+
+function renderSeasonButtons(series) {
+  const container = document.getElementById('seasonFilter');
+  container.innerHTML = `<button class="season-btn active" data-season="all">Todas</button>`;
+  
+  if (!series.seasons || series.seasons.length === 0) {
+    container.innerHTML += `<span style="color:#666;font-size:0.85rem;padding:8px 0;">Nenhuma temporada adicionada</span>`;
+    return;
+  }
+  
+  const seasons = [...new Set(series.seasons.map(s => s.number))].sort((a,b) => a - b);
+  seasons.forEach(num => {
+    const btn = document.createElement('button');
+    btn.className = 'season-btn';
+    btn.dataset.season = num;
+    btn.textContent = `Temporada ${num}`;
+    
+    if (isAdmin) {
+      const editBtn = document.createElement('span');
+      editBtn.className = 'season-actions';
+      editBtn.style.marginLeft = '6px';
+      editBtn.innerHTML = `
+        <i class="fas fa-edit" onclick="event.stopPropagation();editSeason('${series.id}', ${num})" style="color:#888;font-size:0.7rem;cursor:pointer;"></i>
+        <i class="fas fa-trash" onclick="event.stopPropagation();removeSeason('${series.id}', ${num})" style="color:#e08080;font-size:0.7rem;cursor:pointer;margin-left:4px;"></i>
+      `;
+      btn.appendChild(editBtn);
+    }
+    
+    container.appendChild(btn);
+  });
+  
+  container.querySelectorAll('.season-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      container.querySelectorAll('.season-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      currentSeasonFilter = this.dataset.season;
+      renderEpisodes(series, currentSeasonFilter);
+    });
+  });
+}
+
+function renderEpisodes(series, seasonFilter) {
+  const grid = document.getElementById('episodeGrid');
+  let episodes = [];
+  
+  if (!series.seasons || series.seasons.length === 0) {
+    grid.innerHTML = `<div class="episode-empty">Nenhum episódio disponível ainda.</div>`;
+    return;
+  }
+  
+  if (seasonFilter === 'all') {
+    series.seasons.forEach(season => {
+      if (season.episodes && season.episodes.length > 0) {
+        season.episodes.forEach(ep => {
+          episodes.push({ ...ep, seasonNumber: season.number });
+        });
+      }
+    });
+  } else {
+    const season = series.seasons.find(s => s.number === parseInt(seasonFilter));
+    if (season && season.episodes) {
+      episodes = season.episodes.map(ep => ({ ...ep, seasonNumber: season.number }));
+    }
+  }
+  
+  if (episodes.length === 0) {
+    grid.innerHTML = `<div class="episode-empty">Nenhum episódio encontrado nesta temporada.</div>`;
+    return;
+  }
+  
+  episodes.sort((a,b) => (a.number || 0) - (b.number || 0));
+  
+  grid.innerHTML = episodes.map((ep) => `
+    <div class="episode-card" data-episodeid="${ep.id}" data-season="${ep.seasonNumber}">
+      <img src="${ep.cover || 'https://via.placeholder.com/280x140/222/555?text=Episódio'}" alt="${ep.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/280x140/222/555?text=Erro'">
+      <div class="episode-play-icon"><i class="fas fa-play"></i></div>
+      <div class="episode-badge">T${ep.seasonNumber} E${ep.number || '?'}</div>
+      <div class="episode-info">
+        <span class="episode-number">Temporada ${ep.seasonNumber} - Episódio ${ep.number || '?'}</span>
+        <h4>${ep.name}</h4>
+        <p>${ep.desc || ''}</p>
+      </div>
+      ${isAdmin ? `
+        <div class="episode-admin-actions">
+          <button onclick="event.stopPropagation();openEpisodeForm('${series.id}', ${ep.seasonNumber}, '${ep.id}')"><i class="fas fa-edit"></i></button>
+          <button onclick="event.stopPropagation();removeEpisodeFromView('${series.id}', ${ep.seasonNumber}, '${ep.id}')"><i class="fas fa-trash"></i></button>
+        </div>
+      ` : ''}
+    </div>
+  `).join('');
+  
+  grid.querySelectorAll('.episode-card').forEach(card => {
+    card.addEventListener('click', function() {
+      const epId = this.dataset.episodeid;
+      const seasonNum = parseInt(this.dataset.season);
+      const season = series.seasons.find(s => s.number === seasonNum);
+      if (season) {
+        const episode = season.episodes.find(e => e.id === epId);
+        if (episode) {
+          const movieObj = {
+            name: `${series.name} - T${seasonNum} E${episode.number || '?'}`,
+            video: episode.video || series.video,
+            cover: episode.cover || series.cover,
+            desc: episode.desc || series.desc
+          };
+          closeEpisodeView();
+          openVideoPlayer(movieObj);
+        }
+      }
+    });
+  });
+}
+
+// ======================================================================
+// ====================== FILTROS =======================================
+// ======================================================================
+
+function populateGenreFilter() {
+  const filter = document.getElementById('genreFilter');
+  const current = filter.value;
+  filter.innerHTML = '<option value="todos">Todos</option>' + 
+    genres.map(g => `<option value="${g}">${g}</option>`).join('');
+  filter.value = current;
+}
+
+function populateGenreSelect(selectId) {
+  const select = document.getElementById(selectId);
+  if (!select) return;
+  const current = select.value;
+  select.innerHTML = genres.map(g => `<option value="${g}">${g}</option>`).join('');
+  if (current && genres.includes(current)) select.value = current;
+}
+
+function applySearchAndFilter() {
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+  const genreFilter = document.getElementById('genreFilter').value;
+  const cards = document.querySelectorAll('.movie-card');
+  cards.forEach(card => {
+    const name = card.querySelector('h4')?.textContent?.toLowerCase() || '';
+    const genreTags = card.querySelectorAll('.genre-tag');
+    let matchGenre = genreFilter === 'todos';
+    genreTags.forEach(tag => {
+      if (tag.textContent === genreFilter) matchGenre = true;
+    });
+    const matchName = name.includes(searchTerm);
+    card.style.display = (matchName && matchGenre) ? '' : 'none';
+  });
+  document.querySelectorAll('.catalog-row').forEach(row => {
+    const grid = row.querySelector('.movie-grid');
+    const visible = grid.querySelectorAll('.movie-card:not([style*="display: none"])');
+    row.style.display = visible.length === 0 ? 'none' : '';
+  });
+}
+
+function updateAdminPanel() {
+  const panel = document.getElementById('adminPanel');
+  if (isAdmin) {
+    panel.classList.remove('hidden');
+  } else {
+    panel.classList.add('hidden');
+  }
+}
+
+// ======================================================================
+// ====================== LOGIN =========================================
+// ======================================================================
+
+function doLogin(name) {
+  if (!name || !name.trim()) { showToast('Digite um nome!'); return false; }
+  currentUser = name.trim();
+  isAdmin = currentUser === 'ADM';
+  document.getElementById('userDisplay').textContent = isAdmin ? 'ADM' : currentUser;
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('appContainer').classList.add('active');
+  renderAll();
+  showToast(isAdmin ? 'Modo ADM ativado!' : `Bem-vindo, ${currentUser}!`);
+  return true;
+}
+
+document.getElementById('loginConfirmBtn').addEventListener('click', function() {
+  const input = document.getElementById('loginNameInput');
+  doLogin(input.value);
+});
+
+document.getElementById('loginNameInput').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') document.getElementById('loginConfirmBtn').click();
+});
+
+document.getElementById('logoutBtn').addEventListener('click', function() {
+  document.getElementById('appContainer').classList.remove('active');
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('loginNameInput').value = '';
+  currentUser = 'Convidado';
+  isAdmin = false;
+});
+
+// ======================================================================
+// ====================== IMAGEM UPLOAD =================================
+// ======================================================================
+
+function setupImageUpload(fileInputId, urlInputId, previewId) {
+  const fileInput = document.getElementById(fileInputId);
+  const urlInput = document.getElementById(urlInputId);
+  const preview = document.getElementById(previewId);
+
+  if (!fileInput || !urlInput || !preview) return;
+
+  fileInput.addEventListener('change', function(e) {
+    const file = this.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      const dataUrl = event.target.result;
+      urlInput.value = dataUrl;
+      preview.src = dataUrl;
+      preview.classList.add('show');
+      showToast('Imagem carregada!');
+    };
+    reader.readAsDataURL(file);
+  });
+
+  urlInput.addEventListener('input', function() {
+    const url = this.value.trim();
+    if (url) {
+      preview.src = url;
+      preview.classList.add('show');
+      preview.onerror = function() {
+        preview.classList.remove('show');
+      };
+    } else {
+      preview.classList.remove('show');
+    }
+  });
+}
+
+// ======================================================================
+// ====================== GERENCIAMENTO DE GÊNEROS ======================
+// ======================================================================
+
+let tempGenres = [];
+
+function updateGenreTagsUI() {
+  const container = document.getElementById('genreTagsContainer');
+  const hiddenInput = document.getElementById('movieGenres');
+  container.innerHTML = tempGenres.map(g => `
+    <span class="genre-tag-item">
+      ${g}
+      <button type="button" class="remove-genre-tag" data-genre="${g}"><i class="fas fa-times"></i></button>
+    </span>
+  `).join('');
+  hiddenInput.value = tempGenres.join(',');
+  
+  document.querySelectorAll('.remove-genre-tag').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const genre = this.dataset.genre;
+      tempGenres = tempGenres.filter(g => g !== genre);
+      updateGenreTagsUI();
+    });
+  });
+}
+
+document.getElementById('addGenreTagBtn').addEventListener('click', function() {
+  const select = document.getElementById('movieGenreSelect');
+  const genre = select.value;
+  if (!genre) { showToast('Selecione um gênero.'); return; }
+  if (tempGenres.includes(genre)) { showToast('Gênero já adicionado.'); return; }
+  if (tempGenres.length >= 3) { showToast('Máximo de 3 gêneros por conteúdo.'); return; }
+  tempGenres.push(genre);
+  updateGenreTagsUI();
+});
+
+// ======================================================================
+// ====================== MODAL DE FILME ================================
+// ======================================================================
+
+let editingMovie = null;
+let editingCatalogId = null;
+
+function openModal(movie = null, catalogId = null) {
+  if (!isAdmin) { showToast('Apenas ADM pode editar.'); return; }
+  const overlay = document.getElementById('modalOverlay');
+  const title = document.getElementById('modalTitle');
+  const form = document.getElementById('movieForm');
+  form.reset();
+  populateGenreSelect('movieGenreSelect');
+  
+  const preview = document.getElementById('movieCoverPreview');
+  preview.classList.remove('show');
+  document.getElementById('movieCoverFile').value = '';
+  tempGenres = [];
+  document.getElementById('movieIsSeries').checked = false;
+  
+  if (movie) {
+    title.innerHTML = '<i class="fas fa-edit"></i> Editar conteúdo';
+    document.getElementById('movieName').value = movie.name || '';
+    tempGenres = movie.genres || [movie.genre || 'Geral'];
+    document.getElementById('movieDesc').value = movie.desc || '';
+    document.getElementById('movieYear').value = movie.year || '';
+    document.getElementById('movieLanguage').value = movie.language || '';
+    document.getElementById('movieCover').value = movie.cover || '';
+    document.getElementById('movieVideo').value = movie.video || '';
+    document.getElementById('movieIsSeries').checked = movie.isSeries || false;
+    
+    if (movie.cover) {
+      preview.src = movie.cover;
+      preview.classList.add('show');
+    }
+    
+    editingMovie = movie;
+    editingCatalogId = catalogId;
+  } else {
+    title.innerHTML = '<i class="fas fa-plus-circle"></i> Adicionar conteúdo';
+    document.getElementById('movieYear').value = '';
+    document.getElementById('movieLanguage').value = '';
+    document.getElementById('movieVideo').value = '';
+    editingMovie = null;
+    editingCatalogId = catalogId || data.catalogs[0]?.id || null;
+  }
+  updateGenreTagsUI();
+  overlay.classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('active');
+  editingMovie = null;
+  tempGenres = [];
+}
+
+document.getElementById('modalCancel').addEventListener('click', closeModal);
+document.getElementById('modalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+document.getElementById('movieForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  if (!isAdmin) return;
+  const name = document.getElementById('movieName').value.trim();
+  const genres = tempGenres.length > 0 ? tempGenres : [document.getElementById('movieGenreSelect').value || 'Geral'];
+  const desc = document.getElementById('movieDesc').value.trim();
+  const year = document.getElementById('movieYear').value.trim();
+  const language = document.getElementById('movieLanguage').value.trim();
+  const cover = document.getElementById('movieCover').value.trim();
+  const video = document.getElementById('movieVideo').value.trim();
+  const isSeries = document.getElementById('movieIsSeries').checked;
+  
+  if (!name) { showToast('Nome é obrigatório.'); return; }
+  if (genres.length === 0) { showToast('Adicione pelo menos um gênero.'); return; }
+
+  if (editingMovie) {
+    editingMovie.name = name;
+    editingMovie.genres = genres;
+    editingMovie.desc = desc;
+    editingMovie.year = year;
+    editingMovie.language = language;
+    editingMovie.cover = cover;
+    editingMovie.video = video;
+    editingMovie.isSeries = isSeries;
+    if (!editingMovie.seasons) editingMovie.seasons = [];
+    showToast('Conteúdo atualizado!');
+  } else {
+    const cat = data.catalogs.find(c => c.id === editingCatalogId);
+    if (!cat) { showToast('Catálogo não encontrado.'); return; }
+    cat.movies.push({
+      id: 'm' + Date.now(),
+      name,
+      genres,
+      desc,
+      year,
+      language,
+      cover,
+      video,
+      isSeries: isSeries,
+      seasons: []
+    });
+    showToast('Conteúdo adicionado!');
+  }
+  closeModal();
+  renderAll();
+});
+
+setupImageUpload('movieCoverFile', 'movieCover', 'movieCoverPreview');
+
+// ======================================================================
+// ====================== BOTÕES ADM ====================================
+// ======================================================================
+
+document.getElementById('saveDataBtn').addEventListener('click', async function() {
+  if (!isAdmin) return;
+  await saveDataToDB();
+  showToast('Dados salvos com sucesso!');
+});
+
+document.getElementById('addMovieBtn').addEventListener('click', function() {
+  if (!isAdmin) return;
+  const list = data.catalogs.map((c,i) => `${i+1} - ${c.name}`).join('\n');
+  const choice = prompt('Escolha o catálogo (número):\n' + list);
+  if (choice === null) return;
+  const idx = parseInt(choice) - 1;
+  if (isNaN(idx) || idx < 0 || idx >= data.catalogs.length) { showToast('Inválido.'); return; }
+  openModal(null, data.catalogs[idx].id);
+});
+
+document.getElementById('addCatalogBtn').addEventListener('click', function() {
+  if (!isAdmin) return;
+  const name = prompt('Nome do novo catálogo:');
+  if (!name || !name.trim()) return;
+  
+  if (data.catalogs.some(c => c.name.toLowerCase() === name.trim().toLowerCase())) {
+    showToast('Já existe um catálogo com este nome!');
+    return;
+  }
+  
+  data.catalogs.push({
+    id: 'c' + Date.now(),
+    name: name.trim(),
+    order: data.catalogs.length,
+    movies: []
+  });
+  renderAll();
+  showToast(`Catálogo "${name}" criado!`);
+});
+
+document.getElementById('editOrderBtn').addEventListener('click', function() {
+  if (!isAdmin) return;
+  const list = data.catalogs.map((c,i) => `${i+1} - ${c.name} (ordem ${c.order})`).join('\n');
+  const input = prompt('Digite: número do catálogo, nova posição (ordem)\nEx: 1,0\n\n' + list);
+  if (!input) return;
+  const parts = input.split(',').map(s => s.trim());
+  if (parts.length !== 2) { showToast('Formato inválido.'); return; }
+  const idx = parseInt(parts[0]) - 1;
+  const newOrder = parseInt(parts[1]);
+  if (isNaN(idx) || isNaN(newOrder) || idx < 0 || idx >= data.catalogs.length) { showToast('Valores inválidos.'); return; }
+  data.catalogs[idx].order = newOrder;
+  renderAll();
+  showToast('Ordem dos catálogos atualizada!');
+});
+
+document.getElementById('deleteCatalogBtn').addEventListener('click', function() {
+  if (!isAdmin) return;
+  const list = data.catalogs.map((c,i) => `${i+1} - ${c.name} (${c.movies.length} conteúdos)`).join('\n');
+  const choice = prompt('Digite o número do catálogo para EXCLUIR:\n' + list);
+  if (choice === null) return;
+  const idx = parseInt(choice) - 1;
+  if (isNaN(idx) || idx < 0 || idx >= data.catalogs.length) { showToast('Inválido.'); return; }
+  if (confirm(`Excluir "${data.catalogs[idx].name}" permanentemente?`)) {
+    data.catalogs.splice(idx, 1);
+    renderAll();
+    showToast('Catálogo removido.');
+  }
+});
+
+// ======================================================================
+// ====================== MODAL DE TRANSFERÊNCIA ========================
+// ======================================================================
+
+function openTransferModal() {
+  const overlay = document.getElementById('transferModalOverlay');
+  const movieSelect = document.getElementById('transferMovieSelect');
+  const fromSelect = document.getElementById('transferFromCatalog');
+  const toSelect = document.getElementById('transferToCatalog');
+  
+  fromSelect.innerHTML = data.catalogs.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  toSelect.innerHTML = data.catalogs.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  movieSelect.innerHTML = '<option value="">Selecione um catálogo primeiro</option>';
+  
+  overlay.classList.add('active');
+}
+
+document.getElementById('transferFromCatalog').addEventListener('change', function() {
+  const catalogId = this.value;
+  const movieSelect = document.getElementById('transferMovieSelect');
+  const catalog = data.catalogs.find(c => c.id === catalogId);
+  
+  if (!catalog) {
+    movieSelect.innerHTML = '<option value="">Selecione um catálogo primeiro</option>';
+    return;
+  }
+  
+  movieSelect.innerHTML = catalog.movies.map(m => `<option value="${m.id}">${m.name}${m.isSeries ? ' (Série)' : ''}</option>`).join('');
+  if (catalog.movies.length === 0) {
+    movieSelect.innerHTML = '<option value="">Nenhum conteúdo neste catálogo</option>';
+  }
+});
+
+document.getElementById('transferCancel').addEventListener('click', function() {
+  document.getElementById('transferModalOverlay').classList.remove('active');
+});
+
+document.getElementById('transferModalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('active');
+});
+
+document.getElementById('transferForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  if (!isAdmin) return;
+  
+  const movieId = document.getElementById('transferMovieSelect').value;
+  const fromCatalogId = document.getElementById('transferFromCatalog').value;
+  const toCatalogId = document.getElementById('transferToCatalog').value;
+  
+  if (!movieId) {
+    showToast('Selecione um conteúdo.');
+    return;
+  }
+  
+  if (fromCatalogId === toCatalogId) {
+    showToast('Os catálogos de origem e destino são os mesmos.');
+    return;
+  }
+  
+  const fromCatalog = data.catalogs.find(c => c.id === fromCatalogId);
+  const toCatalog = data.catalogs.find(c => c.id === toCatalogId);
+  
+  if (!fromCatalog || !toCatalog) {
+    showToast('Catálogo não encontrado.');
+    return;
+  }
+  
+  const movieIndex = fromCatalog.movies.findIndex(m => m.id === movieId);
+  if (movieIndex === -1) {
+    showToast('Conteúdo não encontrado.');
+    return;
+  }
+  
+  const movie = fromCatalog.movies.splice(movieIndex, 1)[0];
+  toCatalog.movies.push(movie);
+  
+  renderAll();
+  document.getElementById('transferModalOverlay').classList.remove('active');
+  showToast(`"${movie.name}" transferido com sucesso!`);
+});
+
+document.getElementById('transferMovieBtn').addEventListener('click', function() {
+  if (!isAdmin) return;
+  if (data.catalogs.length < 2) {
+    showToast('É necessário pelo menos 2 catálogos para transferir.');
+    return;
+  }
+  openTransferModal();
+});
+
+// ======================================================================
+// ====================== MODAL DE EDIÇÃO DE CATÁLOGO ===================
+// ======================================================================
+
+function openEditCatalogModal(catalog) {
+  document.getElementById('editCatalogId').value = catalog.id;
+  document.getElementById('editCatalogName').value = catalog.name;
+  document.getElementById('editCatalogModalOverlay').classList.add('active');
+}
+
+document.getElementById('editCatalogCancel').addEventListener('click', function() {
+  document.getElementById('editCatalogModalOverlay').classList.remove('active');
+});
+
+document.getElementById('editCatalogModalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('active');
+});
+
+document.getElementById('editCatalogForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  if (!isAdmin) return;
+  
+  const catalogId = document.getElementById('editCatalogId').value;
+  const newName = document.getElementById('editCatalogName').value.trim();
+  
+  if (!newName) {
+    showToast('Digite um nome para o catálogo.');
+    return;
+  }
+  
+  const catalog = data.catalogs.find(c => c.id === catalogId);
+  if (!catalog) {
+    showToast('Catálogo não encontrado.');
+    return;
+  }
+  
+  const exists = data.catalogs.some(c => c.id !== catalogId && c.name.toLowerCase() === newName.toLowerCase());
+  if (exists) {
+    showToast('Já existe um catálogo com este nome! Escolha outro.');
+    return;
+  }
+  
+  catalog.name = newName;
+  renderAll();
+  document.getElementById('editCatalogModalOverlay').classList.remove('active');
+  showToast('Catálogo renomeado com sucesso!');
+});
+
+// ======================================================================
+// ====================== MODAL DE DESTAQUES ============================
+// ======================================================================
+
+document.getElementById('heroEditBtn').addEventListener('click', function() {
+  if (!isAdmin) return;
+  openHeroModal();
+});
+
+function openHeroModal() {
+  const overlay = document.getElementById('heroModalOverlay');
+  const list = document.getElementById('heroList');
+  list.innerHTML = data.heroSlides.map((slide, index) => `
+    <div style="background:#1a1a1a;padding:12px;border-radius:16px;margin-bottom:10px;border:1px solid #2a2a2a;">
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <input type="text" placeholder="Título" value="${slide.title || ''}" class="hero-title" data-index="${index}" style="padding:8px 12px;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:20px;color:white;outline:none;">
+        <input type="text" placeholder="Descrição" value="${slide.desc || ''}" class="hero-desc" data-index="${index}" style="padding:8px 12px;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:20px;color:white;outline:none;">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <input type="text" placeholder="URL da imagem" value="${slide.img || ''}" class="hero-img" data-index="${index}" style="flex:1;min-width:120px;padding:8px 12px;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:20px;color:white;outline:none;">
+          <div class="file-input-wrapper" style="position:relative;overflow:hidden;display:inline-block;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:20px;padding:6px 14px;cursor:pointer;color:#aaa;font-size:0.8rem;white-space:nowrap;">
+            <i class="fas fa-upload"></i> Foto
+            <input type="file" accept="image/*" class="hero-file-input" data-index="${index}" style="position:absolute;left:0;top:0;opacity:0;width:100%;height:100%;cursor:pointer;">
+          </div>
+          <button class="btn-danger" style="padding:6px 14px;border:none;border-radius:30px;cursor:pointer;background:#3a1414;color:#e08080;" onclick="removeHero(${index})">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+        <img src="${slide.img || ''}" class="hero-preview" data-index="${index}" style="max-width:100%;max-height:80px;border-radius:8px;border:1px solid #2a2a2a;object-fit:cover;display:${slide.img ? 'block' : 'none'};">
+      </div>
+    </div>
+  `).join('');
+
+  document.querySelectorAll('.hero-file-input').forEach(input => {
+    input.addEventListener('change', function(e) {
+      const file = this.files[0];
+      if (!file) return;
+      const index = parseInt(this.dataset.index);
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const dataUrl = event.target.result;
+        const imgInput = document.querySelector(`.hero-img[data-index="${index}"]`);
+        if (imgInput) {
+          imgInput.value = dataUrl;
+          const preview = document.querySelector(`.hero-preview[data-index="${index}"]`);
+          if (preview) {
+            preview.src = dataUrl;
+            preview.style.display = 'block';
+          }
+          showToast('Imagem carregada!');
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+
+  document.querySelectorAll('.hero-img').forEach(input => {
+    input.addEventListener('input', function() {
+      const index = parseInt(this.dataset.index);
+      const preview = document.querySelector(`.hero-preview[data-index="${index}"]`);
+      if (preview) {
+        if (this.value.trim()) {
+          preview.src = this.value.trim();
+          preview.style.display = 'block';
+        } else {
+          preview.style.display = 'none';
+        }
+      }
+    });
+  });
+
+  overlay.classList.add('active');
+}
+
+function removeHero(index) {
+  if (confirm('Remover este destaque?')) {
+    data.heroSlides.splice(index, 1);
+    renderAll();
+    openHeroModal();
+  }
+}
+
+document.getElementById('addHeroBtn').addEventListener('click', function() {
+  data.heroSlides.push({ title: 'Novo destaque', desc: 'Descrição', img: '' });
+  renderAll();
+  openHeroModal();
+});
+
+document.getElementById('heroModalClose').addEventListener('click', function() {
+  saveHeroChanges();
+  document.getElementById('heroModalOverlay').classList.remove('active');
+  showToast('Destaques atualizados!');
+});
+
+document.getElementById('heroModalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) {
+    saveHeroChanges();
+    this.classList.remove('active');
+    showToast('Destaques atualizados!');
+  }
+});
+
+function saveHeroChanges() {
+  const titles = document.querySelectorAll('.hero-title');
+  const descs = document.querySelectorAll('.hero-desc');
+  const imgs = document.querySelectorAll('.hero-img');
+  const newSlides = [];
+  titles.forEach((el, i) => {
+    newSlides.push({
+      title: el.value,
+      desc: descs[i]?.value || '',
+      img: imgs[i]?.value || ''
+    });
+  });
+  data.heroSlides = newSlides;
+  renderAll();
+}
+
+// ======================================================================
+// ====================== MODAL DE GÊNEROS ==============================
+// ======================================================================
+
+document.getElementById('manageGenresBtn').addEventListener('click', function() {
+  if (!isAdmin) return;
+  openGenreModal();
+});
+
+function openGenreModal() {
+  const overlay = document.getElementById('genreModalOverlay');
+  const list = document.getElementById('genreList');
+  list.innerHTML = genres.map((g, i) => `
+    <div style="display:flex;align-items:center;justify-content:space-between;background:#1a1a1a;padding:8px 14px;border-radius:30px;margin-bottom:6px;border:1px solid #2a2a2a;">
+      <span>${g}</span>
+      <button class="btn-danger" style="padding:4px 14px;border:none;border-radius:30px;cursor:pointer;background:#3a1414;color:#e08080;font-size:0.8rem;" onclick="removeGenre(${i})">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  `).join('');
+  overlay.classList.add('active');
+}
+
+function removeGenre(index) {
+  if (genres.length <= 1) { showToast('Deve haver pelo menos um gênero.'); return; }
+  if (confirm(`Remover o gênero "${genres[index]}"?`)) {
+    genres.splice(index, 1);
+    saveGenres(genres);
+    renderAll();
+    openGenreModal();
+    showToast('Gênero removido.');
+  }
+}
+
+document.getElementById('addGenreBtn').addEventListener('click', function() {
+  const input = document.getElementById('newGenreInput');
+  const val = input.value.trim();
+  if (!val) { showToast('Digite um gênero.'); return; }
+  if (genres.includes(val)) { showToast('Gênero já existe.'); return; }
+  genres.push(val);
+  saveGenres(genres);
+  renderAll();
+  openGenreModal();
+  input.value = '';
+  showToast(`Gênero "${val}" adicionado.`);
+});
+
+document.getElementById('newGenreInput').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') document.getElementById('addGenreBtn').click();
+});
+
+document.getElementById('genreModalClose').addEventListener('click', function() {
+  document.getElementById('genreModalOverlay').classList.remove('active');
+});
+
+document.getElementById('genreModalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('active');
+});
+
+// ======================================================================
+// ====================== GERENCIADOR DE EPISÓDIOS ======================
+// ======================================================================
+
+document.getElementById('manageEpisodesBtn').addEventListener('click', function() {
+  if (!isAdmin) return;
+  
+  const series = [];
+  data.catalogs.forEach(cat => {
+    cat.movies.forEach(m => {
+      if (m.isSeries) series.push({ ...m, catalogId: cat.id });
+    });
+  });
+  
+  if (series.length === 0) {
+    showToast('Nenhuma série encontrada. Crie uma série primeiro.');
+    return;
+  }
+  
+  const content = document.getElementById('episodeManagerContent');
+  content.innerHTML = series.map(s => `
+    <div style="background:#1a1a1a;padding:16px;border-radius:16px;margin-bottom:12px;border:1px solid #2a2a2a;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+        <strong style="font-size:1.1rem;">${s.name}</strong>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn-primary" style="padding:4px 16px;border:none;border-radius:30px;cursor:pointer;background:#e50914;color:white;font-size:0.75rem;" onclick="addSeasonToSeries('${s.id}')">
+            <i class="fas fa-plus"></i> Temporada
+          </button>
+        </div>
+      </div>
+      ${s.seasons && s.seasons.length > 0 ? s.seasons.sort((a,b) => a.number - b.number).map(season => `
+        <div class="season-manager">
+          <div class="season-header">
+            <strong>Temporada ${season.number} (${season.episodes?.length || 0} episódios)</strong>
+            <div style="display:flex;gap:4px;">
+              <button class="btn-secondary" style="padding:2px 12px;border:none;border-radius:30px;cursor:pointer;background:#2a2a2a;color:#aaa;font-size:0.7rem;" onclick="editSeason('${s.id}', ${season.number})">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn-secondary" style="padding:2px 12px;border:none;border-radius:30px;cursor:pointer;background:#2a2a2a;color:#aaa;font-size:0.7rem;" onclick="openEpisodeForm('${s.id}', ${season.number})">
+                <i class="fas fa-plus"></i>
+              </button>
+              <button class="btn-danger" style="padding:2px 12px;border:none;border-radius:30px;cursor:pointer;background:#3a1414;color:#e08080;font-size:0.7rem;" onclick="removeSeason('${s.id}', ${season.number})">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          ${season.episodes && season.episodes.length > 0 ? season.episodes.sort((a,b) => (a.number||0) - (b.number||0)).map(ep => `
+            <div class="episode-manager-item">
+              <span>${ep.number || '?'}. ${ep.name}</span>
+              <div style="display:flex;gap:4px;">
+                <button class="btn-secondary" style="padding:2px 10px;border:none;border-radius:20px;cursor:pointer;background:#2a2a2a;color:#aaa;font-size:0.7rem;" onclick="openEpisodeForm('${s.id}', ${season.number}, '${ep.id}')">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-danger" style="padding:2px 10px;border:none;border-radius:20px;cursor:pointer;background:#3a1414;color:#e08080;font-size:0.7rem;" onclick="removeEpisode('${s.id}', ${season.number}, '${ep.id}')">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          `).join('') : '<div style="color:#666;padding:4px 0;font-size:0.8rem;">Nenhum episódio nesta temporada.</div>'}
+        </div>
+      `).join('') : '<div style="color:#666;padding:8px;font-size:0.9rem;">Nenhuma temporada adicionada.</div>'}
+    </div>
+  `).join('');
+  
+  document.getElementById('episodeManagerOverlay').classList.add('active');
+});
+
+document.getElementById('episodeManagerClose').addEventListener('click', function() {
+  document.getElementById('episodeManagerOverlay').classList.remove('active');
+});
+
+document.getElementById('episodeManagerOverlay').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('active');
+});
+
+// ======================================================================
+// ====================== MODAL DE EPISÓDIO =============================
+// ======================================================================
+
+function openEpisodeForm(seriesId, seasonNum, episodeId = null) {
+  const overlay = document.getElementById('episodeFormModalOverlay');
+  const title = document.getElementById('episodeFormTitle');
+  
+  document.getElementById('episodeFormSeriesId').value = seriesId;
+  document.getElementById('episodeFormSeasonNum').value = seasonNum;
+  document.getElementById('episodeFormEpisodeId').value = episodeId || '';
+  
+  const form = document.getElementById('episodeForm');
+  form.reset();
+  
+  const preview = document.getElementById('episodeFormCoverPreview');
+  preview.classList.remove('show');
+  document.getElementById('episodeFormCoverFile').value = '';
+  
+  if (episodeId) {
+    title.innerHTML = '<i class="fas fa-edit"></i> Editar Episódio';
+    const series = findSeries(seriesId);
+    if (series) {
+      const season = series.seasons.find(s => s.number === seasonNum);
+      if (season) {
+        const episode = season.episodes.find(e => e.id === episodeId);
+        if (episode) {
+          document.getElementById('episodeFormName').value = episode.name || '';
+          document.getElementById('episodeFormDesc').value = episode.desc || '';
+          document.getElementById('episodeFormCover').value = episode.cover || '';
+          document.getElementById('episodeFormVideo').value = episode.video || '';
+          if (episode.cover) {
+            preview.src = episode.cover;
+            preview.classList.add('show');
+          }
+        }
+      }
+    }
+  } else {
+    title.innerHTML = '<i class="fas fa-plus-circle"></i> Adicionar Episódio';
+  }
+  
+  overlay.classList.add('active');
+}
+
+document.getElementById('episodeFormCancel').addEventListener('click', function() {
+  document.getElementById('episodeFormModalOverlay').classList.remove('active');
+});
+
+document.getElementById('episodeFormModalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('active');
+});
+
+document.getElementById('episodeForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const seriesId = document.getElementById('episodeFormSeriesId').value;
+  const seasonNum = parseInt(document.getElementById('episodeFormSeasonNum').value);
+  const episodeId = document.getElementById('episodeFormEpisodeId').value;
+  const name = document.getElementById('episodeFormName').value.trim();
+  const desc = document.getElementById('episodeFormDesc').value.trim();
+  const cover = document.getElementById('episodeFormCover').value.trim();
+  const video = document.getElementById('episodeFormVideo').value.trim();
+  
+  if (!name) {
+    showToast('Nome do episódio é obrigatório.');
+    return;
+  }
+  
+  const series = findSeries(seriesId);
+  if (!series) { showToast('Série não encontrada.'); return; }
+  
+  const season = series.seasons.find(s => s.number === seasonNum);
+  if (!season) { showToast('Temporada não encontrada.'); return; }
+  
+  if (episodeId) {
+    const episode = season.episodes.find(e => e.id === episodeId);
+    if (episode) {
+      episode.name = name;
+      episode.desc = desc;
+      episode.cover = cover;
+      episode.video = video;
+      showToast('Episódio atualizado!');
+    }
+  } else {
+    const epNumber = season.episodes.length + 1;
+    season.episodes.push({
+      id: 'ep' + Date.now() + Math.random().toString(36).substr(2, 3),
+      name: name,
+      desc: desc,
+      cover: cover,
+      video: video,
+      number: epNumber
+    });
+    showToast('Episódio adicionado!');
+  }
+  
+  document.getElementById('episodeFormModalOverlay').classList.remove('active');
+  renderAll();
+  document.getElementById('episodeManagerClose').click();
+  document.getElementById('manageEpisodesBtn').click();
+});
+
+// Setup image upload para o formulário de episódio
+setupImageUpload('episodeFormCoverFile', 'episodeFormCover', 'episodeFormCoverPreview');
+
+// ======================================================================
+// ====================== FUNÇÕES AUXILIARES ============================
+// ======================================================================
+
+function findSeries(seriesId) {
+  for (const cat of data.catalogs) {
+    for (const m of cat.movies) {
+      if (m.id === seriesId && m.isSeries) return m;
+    }
+  }
+  return null;
+}
+
+function addSeasonToSeries(seriesId) {
+  const num = prompt('Número da temporada:');
+  if (!num || isNaN(parseInt(num))) return;
+  const numInt = parseInt(num);
+  if (numInt < 1) { showToast('Número deve ser maior que 0.'); return; }
+  
+  const series = findSeries(seriesId);
+  if (!series) { showToast('Série não encontrada.'); return; }
+  
+  if (!series.seasons) series.seasons = [];
+  if (series.seasons.some(s => s.number === numInt)) {
+    showToast('Temporada já existe.');
+    return;
+  }
+  
+  series.seasons.push({ number: numInt, episodes: [] });
+  series.seasons.sort((a,b) => a.number - b.number);
+  renderAll();
+  document.getElementById('episodeManagerClose').click();
+  document.getElementById('manageEpisodesBtn').click();
+  showToast(`Temporada ${numInt} adicionada!`);
+}
+
+function editSeason(seriesId, seasonNum) {
+  const newNum = prompt(`Editar temporada ${seasonNum}. Novo número:`, seasonNum);
+  if (!newNum || isNaN(parseInt(newNum))) return;
+  const newNumInt = parseInt(newNum);
+  if (newNumInt < 1) { showToast('Número deve ser maior que 0.'); return; }
+  
+  const series = findSeries(seriesId);
+  if (!series) { showToast('Série não encontrada.'); return; }
+  
+  const season = series.seasons.find(s => s.number === seasonNum);
+  if (!season) { showToast('Temporada não encontrada.'); return; }
+  
+  if (series.seasons.some(s => s.number === newNumInt && s.number !== seasonNum)) {
+    showToast('Já existe uma temporada com este número.');
+    return;
+  }
+  
+  season.number = newNumInt;
+  series.seasons.sort((a,b) => a.number - b.number);
+  renderAll();
+  document.getElementById('episodeManagerClose').click();
+  document.getElementById('manageEpisodesBtn').click();
+  showToast(`Temporada renumerada para ${newNumInt}!`);
+}
+
+function removeSeason(seriesId, seasonNum) {
+  if (!confirm(`Remover a Temporada ${seasonNum} permanentemente?`)) return;
+  
+  const series = findSeries(seriesId);
+  if (!series) { showToast('Série não encontrada.'); return; }
+  
+  const idx = series.seasons.findIndex(s => s.number === seasonNum);
+  if (idx === -1) { showToast('Temporada não encontrada.'); return; }
+  
+  series.seasons.splice(idx, 1);
+  renderAll();
+  document.getElementById('episodeManagerClose').click();
+  document.getElementById('manageEpisodesBtn').click();
+  showToast(`Temporada ${seasonNum} removida!`);
+}
+
+function removeEpisode(seriesId, seasonNum, episodeId) {
+  if (!confirm('Remover este episódio permanentemente?')) return;
+  
+  const series = findSeries(seriesId);
+  if (!series) { showToast('Série não encontrada.'); return; }
+  
+  const season = series.seasons.find(s => s.number === seasonNum);
+  if (!season) { showToast('Temporada não encontrada.'); return; }
+  
+  const idx = season.episodes.findIndex(e => e.id === episodeId);
+  if (idx === -1) { showToast('Episódio não encontrado.'); return; }
+  
+  season.episodes.splice(idx, 1);
+  season.episodes.forEach((e, i) => e.number = i + 1);
+  renderAll();
+  document.getElementById('episodeManagerClose').click();
+  document.getElementById('manageEpisodesBtn').click();
+  showToast('Episódio removido.');
+}
+
+function removeEpisodeFromView(seriesId, seasonNum, episodeId) {
+  if (!confirm('Remover este episódio permanentemente?')) return;
+  
+  const series = findSeries(seriesId);
+  if (!series) { showToast('Série não encontrada.'); return; }
+  
+  const season = series.seasons.find(s => s.number === seasonNum);
+  if (!season) { showToast('Temporada não encontrada.'); return; }
+  
+  const idx = season.episodes.findIndex(e => e.id === episodeId);
+  if (idx === -1) { showToast('Episódio não encontrado.'); return; }
+  
+  season.episodes.splice(idx, 1);
+  season.episodes.forEach((e, i) => e.number = i + 1);
+  renderAll();
+  
+  if (currentSeries) {
+    openEpisodeView(currentSeries);
+  }
+  showToast('Episódio removido.');
+}
+
+// ======================================================================
+// ====================== INICIALIZAÇÃO =================================
+// ======================================================================
+
+document.getElementById('searchInput').addEventListener('input', applySearchAndFilter);
+document.getElementById('genreFilter').addEventListener('change', applySearchAndFilter);
+
+async function init() {
+  try {
+    await openDatabase();
+    await loadData();
+    renderAll();
+    document.getElementById('storageStatus').textContent = '💾 IndexedDB (ilimitado)';
+    console.log('✅ NyF Stream iniciado com IndexedDB!');
+  } catch (error) {
+    console.error('❌ Erro na inicialização:', error);
+    document.getElementById('storageStatus').textContent = '⚠️ Erro no IndexedDB';
+  }
+}
+
+init();
+</script>
+</body>
+</html>

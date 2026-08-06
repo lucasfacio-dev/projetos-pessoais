@@ -1,0 +1,2484 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>🎲 Tabletop Virtual</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    /* ============================================================
+       RESET E BASE
+       ============================================================ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    body {
+      display: flex;
+      height: 100vh;
+      background: #0b0d10;
+      color: #e0e4ec;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    body.read-mode .sidebar {
+      display: none;
+    }
+    body.read-mode .toolbar {
+      display: none;
+    }
+    body.read-mode .canvas-info {
+      display: none;
+    }
+    body.read-mode .token-controls {
+      display: none !important;
+    }
+    body.read-mode .token:hover {
+      transform: none !important;
+    }
+    body.read-mode .token.selected {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(60, 130, 220, 0.3);
+    }
+    body.read-mode .canvas-container {
+      cursor: grab;
+    }
+    body.read-mode .canvas-container:active {
+      cursor: grabbing;
+    }
+    body.read-mode .read-mode-nav {
+      display: flex !important;
+    }
+
+    /* ============================================================
+       READ MODE NAV - SUPER DISCRETO
+       ============================================================ */
+    .read-mode-nav {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      gap: 6px;
+      z-index: 100;
+      background: rgba(10, 14, 20, 0.4);
+      padding: 5px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(60, 80, 110, 0.15);
+      backdrop-filter: blur(6px);
+      box-shadow: 0 2px 16px rgba(0, 0, 0, 0.2);
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+
+    .read-mode-nav:hover {
+      background: rgba(10, 14, 20, 0.7);
+      border-color: rgba(60, 80, 110, 0.3);
+    }
+
+    .read-mode-nav button {
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      margin: 0;
+      border: none;
+      border-radius: 50%;
+      background: transparent;
+      color: rgba(138, 179, 223, 0.5);
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: none;
+      border: 1px solid transparent;
+    }
+
+    .read-mode-nav button svg {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: rgba(138, 179, 223, 0.5);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: all 0.25s ease;
+    }
+
+    .read-mode-nav button:hover:not(:disabled) {
+      background: rgba(60, 130, 220, 0.15);
+      border-color: rgba(60, 130, 220, 0.2);
+      transform: scale(1.05);
+    }
+
+    .read-mode-nav button:hover:not(:disabled) svg {
+      stroke: rgba(138, 179, 223, 0.9);
+    }
+
+    .read-mode-nav button:disabled {
+      opacity: 0.15;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .read-mode-nav button:disabled svg {
+      stroke: rgba(138, 179, 223, 0.15);
+    }
+
+    .read-mode-nav button.home-btn svg {
+      stroke: rgba(255, 220, 180, 0.5);
+    }
+
+    .read-mode-nav button.home-btn:hover:not(:disabled) svg {
+      stroke: rgba(255, 220, 180, 0.9);
+    }
+
+    .read-mode-nav .nav-separator {
+      width: 1px;
+      height: 20px;
+      background: rgba(60, 80, 110, 0.15);
+      margin: 0 2px;
+    }
+
+    .read-mode-nav .page-indicator {
+      color: rgba(138, 179, 223, 0.4);
+      font-size: 11px;
+      font-weight: 400;
+      padding: 0 4px;
+      min-width: 40px;
+      text-align: center;
+      letter-spacing: 0.3px;
+      transition: all 0.3s ease;
+    }
+
+    .read-mode-nav:hover .page-indicator {
+      color: rgba(138, 179, 223, 0.7);
+    }
+
+    /* ============================================================
+       SCROLL
+       ============================================================ */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1a1e26;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2a3a5a;
+      border-radius: 8px;
+    }
+
+    /* ============================================================
+       SIDEBAR
+       ============================================================ */
+    .sidebar {
+      width: 270px;
+      background: #14181f;
+      border-right: 1px solid #1f2a35;
+      padding: 18px 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+      flex-shrink: 0;
+      backdrop-filter: blur(2px);
+      box-shadow: 4px 0 20px rgba(0, 0, 0, 0.6);
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar h2 {
+      text-align: center;
+      font-weight: 600;
+      font-size: 20px;
+      letter-spacing: 1px;
+      color: #7ab7ff;
+      text-shadow: 0 0 12px rgba(0, 120, 255, 0.3);
+      border-bottom: 1px solid #25303d;
+      padding-bottom: 12px;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .sidebar h2 button {
+      width: auto;
+      padding: 4px 12px;
+      margin: 0;
+      font-size: 18px;
+      background: transparent;
+      border: 1px solid #3a5a7a;
+      border-radius: 20px;
+      color: #8ab3df;
+      box-shadow: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sidebar h2 button:hover {
+      background: #1a2a3a;
+      border-color: #5b9eff;
+    }
+
+    .section {
+      background: #1b212a;
+      padding: 14px 14px 16px;
+      border-radius: 14px;
+      border: 1px solid #28323f;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+      transition: border 0.2s;
+    }
+
+    .section:hover {
+      border-color: #3e5066;
+    }
+
+    .section h3 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #95aec9;
+      margin-bottom: 10px;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .section h3::before {
+      content: "▸";
+      color: #4a7db5;
+      font-size: 14px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .section-header h3 {
+      margin-bottom: 0;
+    }
+
+    .section-header button {
+      width: auto;
+      padding: 4px 12px;
+      margin: 0;
+      font-size: 11px;
+      background: #1a2838;
+      border-color: #2a4058;
+    }
+
+    /* ===== BOTÕES ===== */
+    button {
+      width: 100%;
+      padding: 9px 0;
+      margin-top: 6px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(145deg, #1c3c5a, #0f2538);
+      color: #d6eaff;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+      border: 1px solid #2c4a66;
+      letter-spacing: 0.3px;
+    }
+
+    button:hover {
+      transform: translateY(-1px) scale(1.02);
+      background: linear-gradient(145deg, #264d70, #123146);
+      border-color: #4f82b0;
+      box-shadow: 0 4px 12px rgba(0, 80, 200, 0.3);
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    button.danger {
+      background: linear-gradient(145deg, #4a1e2a, #2e101a);
+      border-color: #6a2e3a;
+      color: #ffb3b3;
+    }
+    button.danger:hover {
+      background: linear-gradient(145deg, #6a2a3a, #3e1822);
+      border-color: #aa4a5a;
+    }
+
+    button.warning {
+      background: linear-gradient(145deg, #4a3a1e, #2e2a10);
+      border-color: #6a5a2e;
+      color: #ffddb3;
+    }
+    button.warning:hover {
+      background: linear-gradient(145deg, #6a4a2a, #3e2a18);
+      border-color: #aa8a4a;
+    }
+
+    button.success {
+      background: linear-gradient(145deg, #1a4a2a, #0e2a18);
+      border-color: #2a6a4a;
+      color: #b3ffd6;
+    }
+    button.success:hover {
+      background: linear-gradient(145deg, #2a6a3a, #1a3a22);
+      border-color: #4aaa6a;
+    }
+
+    .btn-small {
+      width: auto;
+      padding: 4px 12px;
+      margin: 0;
+      font-size: 11px;
+    }
+
+    /* ===== INVENTÁRIO ===== */
+    #inventory {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      max-height: 160px;
+      overflow-y: auto;
+      padding: 6px 2px 2px;
+    }
+
+    .inventory-item {
+      width: 58px;
+      height: 58px;
+      background: #10161d;
+      border: 2px solid #293a4a;
+      border-radius: 12px;
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+    }
+
+    .inventory-item:hover {
+      transform: scale(1.10);
+      border-color: #4f8fc9;
+      box-shadow: 0 0 16px rgba(60, 140, 255, 0.3);
+    }
+
+    .inventory-item img {
+      max-width: 85%;
+      max-height: 85%;
+      pointer-events: none;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+    }
+
+    /* ===== PÁGINAS ===== */
+    #pagesList {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 130px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .page-item {
+      padding: 8px 12px;
+      background: #111820;
+      border: 1px solid #283544;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: #b0c8dd;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .page-item .page-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .page-item .page-label::before {
+      content: "📄";
+      font-size: 14px;
+      opacity: 0.6;
+      flex-shrink: 0;
+    }
+
+    .page-item:hover {
+      background: #1e2a36;
+      border-color: #3f5f7a;
+    }
+
+    .page-item.active {
+      border-color: #4b8bcb;
+      background: #1b2c40;
+      color: #d6edff;
+      box-shadow: 0 0 12px rgba(40, 130, 255, 0.2);
+    }
+
+    .page-item.active .page-label::before {
+      content: "📌";
+    }
+
+    .page-item .page-actions {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .page-item .page-actions button {
+      background: none;
+      border: none;
+      color: #6a8aaa;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0 4px;
+      margin: 0;
+      width: auto;
+      box-shadow: none;
+      border-radius: 4px;
+      transition: 0.2s;
+    }
+
+    .page-item .page-actions button:hover {
+      color: #5b9eff;
+      background: rgba(80, 160, 255, 0.1);
+      transform: scale(1.1);
+    }
+
+    .page-item .page-actions .delete-page:hover {
+      color: #ff6a6a;
+      background: rgba(255, 0, 0, 0.1);
+    }
+
+    /* ============================================================
+       MAIN (ÁREA DO MAPA)
+       ============================================================ */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #080a0e;
+    }
+
+    /* ===== TOOLBAR ===== */
+    .toolbar {
+      height: 48px;
+      background: #141a22;
+      border-bottom: 1px solid #1d2935;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 16px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    .toolbar button {
+      width: 40px;
+      height: 34px;
+      font-size: 16px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #1f2937;
+      border-color: #33455a;
+      color: #b8d4f0;
+      border-radius: 8px;
+      margin: 0;
+    }
+
+    .toolbar button:hover {
+      background: #2a3a4e;
+      border-color: #4f7aa8;
+    }
+
+    .toolbar .read-mode-btn {
+      width: auto;
+      padding: 0 14px;
+      gap: 6px;
+      font-size: 14px;
+      background: #1a2a3a;
+      border-color: #3a5a7a;
+      margin-left: auto;
+    }
+
+    .toolbar .read-mode-btn:hover {
+      background: #2a4a6a;
+    }
+
+    .toolbar .read-mode-btn.active {
+      background: #2a4a6a;
+      border-color: #5b9eff;
+      box-shadow: 0 0 20px rgba(40, 130, 255, 0.2);
+    }
+
+    .toolbar .map-title {
+      color: #8ab3df;
+      font-size: 14px;
+      font-weight: 500;
+      margin-left: 12px;
+      padding: 4px 12px;
+      background: #1a2230;
+      border-radius: 8px;
+      border: 1px solid #2a3a4e;
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .toolbar span {
+      color: #6f8aa8;
+      font-size: 13px;
+      margin-left: 8px;
+      font-weight: 300;
+    }
+
+    /* ===== CANVAS CONTAINER ===== */
+    .canvas-container {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      background: #0a0d12;
+      background-image:
+        radial-gradient(circle at 20% 30%, #10181f 0%, #07090d 100%);
+      cursor: grab;
+    }
+
+    .canvas-container:active {
+      cursor: grabbing;
+    }
+
+    /* ===== CANVAS ===== */
+    .canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform-origin: 0 0;
+      will-change: transform;
+    }
+
+    /* ===== MAPA ===== */
+    .map {
+      display: block;
+      max-width: none;
+      pointer-events: none;
+      border-radius: 6px;
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.7);
+      image-rendering: auto;
+    }
+
+    /* ===== GRID ===== */
+    .grid-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(0, 0, 0, 0.25) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.25) 1px, transparent 1px);
+      background-size: 50px 50px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 5;
+    }
+
+    .grid-overlay.active {
+      opacity: 1;
+    }
+
+    /* ===== TOKENS LAYER ===== */
+    .tokens-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .tokens-layer .token {
+      pointer-events: all;
+    }
+
+    /* ============================================================
+       TOKEN
+       ============================================================ */
+    .token {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      cursor: grab;
+      user-select: none;
+      transition: filter 0.15s, transform 0.1s;
+      overflow: visible;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7), 0 0 0 2px rgba(60, 130, 220, 0.2);
+      will-change: transform;
+      background: #141a22;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+
+    .token .token-image-wrapper {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #141a22;
+    }
+
+    .token.token-png .token-image-wrapper {
+      border-radius: 0;
+      background: transparent;
+    }
+
+    .token img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      pointer-events: none;
+      display: block;
+      filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+    }
+
+    .token:hover {
+      transform: scale(1.05);
+      z-index: 10;
+      box-shadow: 0 6px 24px rgba(0, 80, 200, 0.5), 0 0 0 2px #4b8bcb;
+    }
+
+    .token.selected {
+      outline: none;
+      box-shadow: 0 0 0 3px #5b9eff, 0 0 30px rgba(40, 140, 255, 0.6);
+      z-index: 20;
+      transform: scale(1.04);
+    }
+
+    /* ===== CONTROLES DO TOKEN ===== */
+    .token-controls {
+      position: absolute;
+      top: -16px;
+      right: -16px;
+      display: flex;
+      gap: 4px;
+      opacity: 0;
+      transition: opacity 0.2s ease, transform 0.15s;
+      transform: scale(0.8);
+      pointer-events: none;
+      z-index: 30;
+      background: rgba(20, 24, 31, 0.9);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid #3a5a7a;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+    }
+
+    .token.selected .token-controls {
+      opacity: 1;
+      transform: scale(1);
+      pointer-events: all;
+    }
+
+    .token:hover .token-controls {
+      opacity: 0.5;
+    }
+
+    .token.selected:hover .token-controls {
+      opacity: 1;
+    }
+
+    .token-controls button {
+      width: 24px;
+      height: 24px;
+      font-size: 14px;
+      border-radius: 6px;
+      padding: 0;
+      margin: 0;
+      background: #1e2c3f;
+      border: 1px solid #3f6180;
+      color: #bfd9f5;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      transition: 0.15s;
+      min-width: 24px;
+    }
+
+    .token-controls button:hover {
+      background: #2e4662;
+      border-color: #6b9ad4;
+      transform: scale(1.15);
+    }
+
+    .token-controls .control-label {
+      font-size: 10px;
+      color: #6f8aa8;
+      padding: 0 4px;
+      display: flex;
+      align-items: center;
+    }
+
+    /* ============================================================
+       TOKEN INFO POPUP
+       ============================================================ */
+    .token-info-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .token-info-overlay.active {
+      display: flex;
+    }
+
+    .token-info-panel {
+      background: #1b212a;
+      border: 1px solid #3a5a7a;
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 550px;
+      width: 95%;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .token-info-panel .close-btn {
+      float: right;
+      background: none;
+      border: none;
+      color: #6a8aaa;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 0 8px;
+      width: auto;
+      margin: 0;
+      box-shadow: none;
+    }
+
+    .token-info-panel .close-btn:hover {
+      color: #ff6a6a;
+      transform: scale(1.1);
+    }
+
+    .token-info-panel .token-preview {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin: 10px auto 20px;
+      border: 3px solid #4a7db5;
+      box-shadow: 0 0 30px rgba(40, 130, 255, 0.2);
+    }
+
+    .token-info-panel .token-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .token-info-panel .info-field {
+      margin: 12px 0;
+    }
+
+    .token-info-panel .info-field label {
+      display: block;
+      font-size: 11px;
+      color: #6f8aa8;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .token-info-panel .info-field input,
+    .token-info-panel .info-field textarea {
+      width: 100%;
+      padding: 8px 12px;
+      background: #111820;
+      border: 1px solid #2a3a4e;
+      border-radius: 8px;
+      color: #d6eaff;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+
+    .token-info-panel .info-field input:focus,
+    .token-info-panel .info-field textarea:focus {
+      outline: none;
+      border-color: #4b8bcb;
+      box-shadow: 0 0 12px rgba(40, 130, 255, 0.2);
+    }
+
+    .token-info-panel .info-field textarea {
+      resize: vertical;
+      min-height: 40px;
+    }
+
+    /* ===== HEALTH ===== */
+    .health-bar {
+      margin: 15px 0;
+    }
+
+    .health-bar .bar {
+      width: 100%;
+      height: 12px;
+      background: #1a1e26;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #2a3a4e;
+    }
+
+    .health-bar .bar .fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ff4444, #66bb6a);
+      transition: width 0.3s ease;
+      border-radius: 10px;
+    }
+
+    .health-bar .controls {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .health-bar .controls button {
+      width: auto;
+      padding: 4px 12px;
+      margin: 0;
+      font-size: 12px;
+    }
+
+    .health-bar .controls .health-input {
+      width: 80px;
+      padding: 4px 8px;
+      background: #111820;
+      border: 1px solid #2a3a4e;
+      border-radius: 6px;
+      color: #d6eaff;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .health-bar .controls .health-input:focus {
+      outline: none;
+      border-color: #4b8bcb;
+    }
+
+    .health-bar .controls .health-bonus {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .health-bar .controls .health-bonus label {
+      font-size: 11px;
+      color: #6f8aa8;
+    }
+
+    .health-bar .controls .health-bonus input {
+      width: 50px;
+      padding: 4px 8px;
+      background: #111820;
+      border: 1px solid #2a3a4e;
+      border-radius: 6px;
+      color: #ffddb3;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .health-bar .controls .health-bonus input:focus {
+      outline: none;
+      border-color: #4b8bcb;
+    }
+
+    /* ===== ATTRIBUTES TAGS ===== */
+    .attributes-section {
+      margin: 15px 0;
+    }
+
+    .attributes-section .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .attributes-section .tag {
+      background: #1a2a3a;
+      border: 1px solid #3a5a7a;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      color: #8ab3df;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: 0.2s;
+      position: relative;
+    }
+
+    .attributes-section .tag:hover {
+      background: #2a3a4a;
+      border-color: #5a8aba;
+    }
+
+    .attributes-section .tag .tag-actions {
+      display: none;
+      gap: 4px;
+    }
+
+    .attributes-section .tag:hover .tag-actions {
+      display: inline-flex;
+    }
+
+    .attributes-section .tag .tag-actions button {
+      width: 16px;
+      height: 16px;
+      padding: 0;
+      margin: 0;
+      font-size: 10px;
+      border-radius: 50%;
+      background: transparent;
+      border: none;
+      color: #8ab3df;
+      cursor: pointer;
+      box-shadow: none;
+    }
+
+    .attributes-section .tag .tag-actions button:hover {
+      color: #ff6a6a;
+      transform: scale(1.2);
+    }
+
+    .attributes-section .tag .tag-actions button.edit-tag:hover {
+      color: #5b9eff;
+    }
+
+    .attributes-section .add-tag-btn {
+      background: transparent;
+      border: 1px dashed #3a5a7a;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      color: #4a6a8a;
+      cursor: pointer;
+      transition: 0.2s;
+      width: auto;
+      margin: 0;
+      box-shadow: none;
+    }
+
+    .attributes-section .add-tag-btn:hover {
+      border-color: #5a8aba;
+      color: #8ab3df;
+      transform: scale(1.05);
+    }
+
+    /* ===== HOTBAR ===== */
+    .hotbar {
+      margin: 15px 0;
+    }
+
+    .hotbar .slots {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .hotbar .slot {
+      width: 60px;
+      height: 60px;
+      background: #111820;
+      border: 2px solid #2a3a4e;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s;
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .hotbar .slot:hover {
+      border-color: #4f8fc9;
+      transform: scale(1.05);
+    }
+
+    .hotbar .slot img {
+      width: 80%;
+      height: 80%;
+      object-fit: contain;
+      border-radius: 50%;
+    }
+
+    .hotbar .slot .item-name {
+      font-size: 8px;
+      color: #8ab3df;
+      text-align: center;
+      line-height: 1.2;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding: 0 2px;
+    }
+
+    .hotbar .slot .slot-remove {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 18px;
+      height: 18px;
+      background: #4a1e2a;
+      border: 1px solid #6a2e3a;
+      border-radius: 50%;
+      color: #ffb3b3;
+      font-size: 10px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+      margin: 0;
+      box-shadow: none;
+    }
+
+    .hotbar .slot:hover .slot-remove {
+      display: flex;
+    }
+
+    .hotbar .slot .slot-remove:hover {
+      background: #6a2a3a;
+      transform: scale(1.1);
+    }
+
+    .hotbar .add-item-btn {
+      width: 60px;
+      height: 60px;
+      border: 2px dashed #2a3a4e;
+      border-radius: 12px;
+      background: transparent;
+      color: #4a6a8a;
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.2s;
+      margin: 0;
+      padding: 0;
+      box-shadow: none;
+    }
+
+    .hotbar .add-item-btn:hover {
+      border-color: #4f8fc9;
+      color: #8ab3df;
+      transform: scale(1.05);
+    }
+
+    /* ============================================================
+       CANVAS INFO
+       ============================================================ */
+    .canvas-info {
+      position: absolute;
+      bottom: 14px;
+      right: 18px;
+      color: #5b7b9a;
+      font-size: 12px;
+      background: rgba(10, 14, 20, 0.75);
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid #1d2c3d;
+      pointer-events: none;
+      backdrop-filter: blur(4px);
+      letter-spacing: 0.3px;
+      font-weight: 300;
+      z-index: 50;
+    }
+
+    .canvas-info span {
+      color: #8ab3df;
+      font-weight: 500;
+    }
+
+    /* ============================================================
+       RESPONSIVIDADE
+       ============================================================ */
+    @media (max-width: 720px) {
+      .sidebar {
+        width: 210px;
+        padding: 12px;
+      }
+      .sidebar h2 {
+        font-size: 16px;
+      }
+      .inventory-item {
+        width: 46px;
+        height: 46px;
+      }
+      .token-info-panel {
+        padding: 20px;
+        max-width: 95%;
+      }
+      .toolbar .map-title {
+        max-width: 100px;
+        font-size: 12px;
+      }
+      .read-mode-nav {
+        bottom: 16px;
+        padding: 4px 8px;
+        gap: 4px;
+      }
+      .read-mode-nav button {
+        width: 24px;
+        height: 24px;
+      }
+      .read-mode-nav button svg {
+        width: 14px;
+        height: 14px;
+      }
+      .read-mode-nav .page-indicator {
+        font-size: 10px;
+        min-width: 32px;
+      }
+    }
+
+    @media (max-width: 540px) {
+      body {
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 100%;
+        max-height: 45vh;
+        border-right: none;
+        border-bottom: 1px solid #1f2a35;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 12px;
+        overflow-y: auto;
+      }
+      .sidebar h2 {
+        width: 100%;
+        font-size: 16px;
+        padding-bottom: 6px;
+      }
+      .section {
+        flex: 1 1 40%;
+        min-width: 120px;
+        padding: 10px;
+      }
+      .main {
+        height: 55vh;
+      }
+      .toolbar .map-title {
+        max-width: 60px;
+        font-size: 10px;
+      }
+    }
+
+    /* ============================================================
+       ANIMAÇÃO
+       ============================================================ */
+    @keyframes fadeSlide {
+      0% { opacity: 0; transform: translateY(8px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .section, .inventory-item, .page-item {
+      animation: fadeSlide 0.25s ease;
+    }
+
+    /* ============================================================
+       TOOLTIP
+       ============================================================ */
+    .tooltip {
+      font-size: 11px;
+      color: #5f7d9c;
+      margin-top: 4px;
+      opacity: 0.7;
+      padding-left: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+
+    <h2>
+      🎲 Tabletop
+      <button id="readModeBtn" title="Modo Leitura">👁</button>
+    </h2>
+
+    <div class="section">
+      <h3>Mapa</h3>
+      <input type="file" id="mapUpload" accept="image/*" style="color:#b0c8dd; background:#111820; border:1px solid #2a3a4e; border-radius:8px; padding:6px; width:100%;">
+      <button id="resetZoom">Reset Zoom</button>
+      <button id="removeMap" class="danger">Remover Mapa</button>
+    </div>
+
+    <div class="section">
+      <h3>Tokens (PNG)</h3>
+      <input type="file" id="tokenUpload" accept="image/png" multiple style="color:#b0c8dd; background:#111820; border:1px solid #2a3a4e; border-radius:8px; padding:6px; width:100%;">
+      <div class="tooltip">Clique no item para criar token</div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <h3>Páginas</h3>
+        <button id="newPage" class="btn-small">+ Nova</button>
+      </div>
+      <div id="pagesList"></div>
+    </div>
+
+    <div class="section">
+      <h3>Ferramentas</h3>
+      <button id="toggleGrid">Grid ON/OFF</button>
+      <button id="duplicateToken">Duplicar Token</button>
+      <button id="deleteToken" class="danger">Excluir Token</button>
+      <button id="saveAll" class="success">💾 Salvar Tudo</button>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <h3>Inventário</h3>
+        <button id="resetInventory" class="btn-small warning">Resetar</button>
+      </div>
+      <div id="inventory"></div>
+    </div>
+
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main">
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <button id="zoomIn">➕</button>
+      <button id="zoomOut">➖</button>
+      <button id="centerMap">⬡</button>
+      <span style="margin-left:12px; color:#5f7d9c;">|</span>
+      <span id="zoomLevel" style="color:#8ab3df; font-weight:400;">100%</span>
+      <span class="map-title" id="mapTitle">Sem mapa</span>
+      <button id="readModeBtnToolbar" class="read-mode-btn">👁 Modo Leitura</button>
+    </div>
+
+    <!-- CANVAS -->
+    <div class="canvas-container" id="canvasContainer">
+
+      <div class="canvas" id="canvas">
+
+        <!-- MAPA -->
+        <img id="mapImage" class="map" src="" alt="Mapa">
+
+        <!-- GRID -->
+        <div id="gridOverlay" class="grid-overlay"></div>
+
+        <!-- TOKENS -->
+        <div id="tokensLayer" class="tokens-layer"></div>
+
+      </div>
+
+      <!-- INFO -->
+      <div class="canvas-info">
+        <span id="tokenCount">0</span> tokens · <span id="gridStatus">grid OFF</span>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ===== READ MODE NAV - SUPER DISCRETO ===== -->
+  <div class="read-mode-nav" id="readModeNav">
+    <button class="home-btn" id="navHome" title="Voltar ao menu">
+      <svg viewBox="0 0 24 24">
+        <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"/>
+      </svg>
+    </button>
+    <span class="nav-separator"></span>
+    <button id="navPrev" title="Página anterior">
+      <svg viewBox="0 0 24 24">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+    <span class="page-indicator" id="navPageIndicator">1 / 1</span>
+    <button id="navNext" title="Próxima página">
+      <svg viewBox="0 0 24 24">
+        <polyline points="9 6 15 12 9 18"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- ===== TOKEN INFO OVERLAY ===== -->
+  <div class="token-info-overlay" id="tokenInfoOverlay">
+    <div class="token-info-panel" id="tokenInfoPanel">
+      <button class="close-btn" id="closeTokenInfo">✕</button>
+      <div style="text-align:center;">
+        <div class="token-preview" id="tokenPreview">
+          <img src="" alt="Token preview">
+        </div>
+      </div>
+
+      <div class="info-field">
+        <label>Nome</label>
+        <input type="text" id="tokenName" placeholder="Nome do personagem">
+      </div>
+
+      <div class="info-field">
+        <label>Classe</label>
+        <input type="text" id="tokenClass" placeholder="Ex: Guerreiro, Mago">
+      </div>
+
+      <div class="info-field">
+        <label>Raça</label>
+        <input type="text" id="tokenRace" placeholder="Ex: Humano, Elfo">
+      </div>
+
+      <div class="info-field">
+        <label>Descrição / Observações</label>
+        <textarea id="tokenNotes" placeholder="Descrição do personagem..."></textarea>
+      </div>
+
+      <div class="health-bar">
+        <label style="font-size:11px; color:#6f8aa8; text-transform:uppercase; letter-spacing:1px;">Vida</label>
+        <div class="bar">
+          <div class="fill" id="healthFill" style="width:100%;"></div>
+        </div>
+        <div class="controls">
+          <button class="btn-small" id="healthMinus">-5</button>
+          <input type="number" class="health-input" id="healthInput" min="0" max="999" value="100">
+          <button class="btn-small" id="healthPlus">+5</button>
+          <button class="btn-small danger" id="healthReset">Reset</button>
+          <div class="health-bonus">
+            <label>Bônus:</label>
+            <input type="number" id="healthBonus" min="0" max="999" value="0">
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:4px; align-items:center;">
+          <span id="healthText" style="color:#8ab3df; font-weight:600;">100/100</span>
+          <span id="healthBonusText" style="color:#ffddb3; font-weight:600; font-size:12px;">(+0)</span>
+        </div>
+      </div>
+
+      <div class="attributes-section">
+        <label style="font-size:11px; color:#6f8aa8; text-transform:uppercase; letter-spacing:1px;">Atributos</label>
+        <div class="tags" id="attributesTags"></div>
+        <button class="add-tag-btn" id="addAttribute">+ Adicionar Atributo</button>
+      </div>
+
+      <div class="hotbar">
+        <label style="font-size:11px; color:#6f8aa8; text-transform:uppercase; letter-spacing:1px;">Inventário</label>
+        <div class="slots" id="hotbarSlots"></div>
+        <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
+          <button class="btn-small" id="addItemImage">📷 Adicionar Imagem</button>
+          <button class="btn-small" id="addItemText">✏️ Adicionar Texto</button>
+          <input type="file" id="itemImageUpload" accept="image/*" style="display:none;">
+        </div>
+      </div>
+
+      <button id="saveTokenInfo" style="margin-top:16px;">Salvar Informações</button>
+    </div>
+  </div>
+
+  <!-- ===== TEMPLATE TOKEN ===== -->
+  <template id="tokenTemplate">
+    <div class="token">
+      <div class="token-image-wrapper">
+        <img src="" alt="token">
+      </div>
+      <div class="token-controls">
+        <button class="rotate-left" title="Girar esquerda">⟲</button>
+        <button class="rotate-right" title="Girar direita">⟳</button>
+        <button class="size-down" title="Diminuir">−</button>
+        <button class="size-up" title="Aumentar">+</button>
+      </div>
+    </div>
+  </template>
+
+  <!-- ===== TEMPLATE INVENTÁRIO ===== -->
+  <template id="inventoryItemTemplate">
+    <div class="inventory-item" draggable="true">
+      <img src="" alt="item">
+    </div>
+  </template>
+
+  <!-- ============================================================
+  SCRIPT
+  ============================================================ -->
+  <script>
+    (function() {
+      "use strict";
+
+      // ===== ELEMENTOS =====
+      const canvas = document.getElementById("canvas");
+      const mapImage = document.getElementById("mapImage");
+      const mapTitle = document.getElementById("mapTitle");
+      const tokensLayer = document.getElementById("tokensLayer");
+      const canvasContainer = document.getElementById("canvasContainer");
+      const mapUpload = document.getElementById("mapUpload");
+      const tokenUpload = document.getElementById("tokenUpload");
+      const inventory = document.getElementById("inventory");
+      const zoomInBtn = document.getElementById("zoomIn");
+      const zoomOutBtn = document.getElementById("zoomOut");
+      const resetZoomBtn = document.getElementById("resetZoom");
+      const centerMapBtn = document.getElementById("centerMap");
+      const newPageBtn = document.getElementById("newPage");
+      const pagesList = document.getElementById("pagesList");
+      const deleteBtn = document.getElementById("deleteToken");
+      const duplicateBtn = document.getElementById("duplicateToken");
+      const toggleGridBtn = document.getElementById("toggleGrid");
+      const removeMapBtn = document.getElementById("removeMap");
+      const resetInventoryBtn = document.getElementById("resetInventory");
+      const saveAllBtn = document.getElementById("saveAll");
+      const gridOverlay = document.getElementById("gridOverlay");
+      const tokenTemplate = document.getElementById("tokenTemplate");
+      const inventoryTemplate = document.getElementById("inventoryItemTemplate");
+      const zoomLevelSpan = document.getElementById("zoomLevel");
+      const tokenCountSpan = document.getElementById("tokenCount");
+      const gridStatusSpan = document.getElementById("gridStatus");
+      const readModeBtn = document.getElementById("readModeBtn");
+      const readModeBtnToolbar = document.getElementById("readModeBtnToolbar");
+      const readModeNav = document.getElementById("readModeNav");
+      const navHome = document.getElementById("navHome");
+      const navPrev = document.getElementById("navPrev");
+      const navNext = document.getElementById("navNext");
+      const navPageIndicator = document.getElementById("navPageIndicator");
+
+      // Token Info Elements
+      const tokenInfoOverlay = document.getElementById("tokenInfoOverlay");
+      const closeTokenInfo = document.getElementById("closeTokenInfo");
+      const tokenPreview = document.getElementById("tokenPreview");
+      const tokenName = document.getElementById("tokenName");
+      const tokenClass = document.getElementById("tokenClass");
+      const tokenRace = document.getElementById("tokenRace");
+      const tokenNotes = document.getElementById("tokenNotes");
+      const healthFill = document.getElementById("healthFill");
+      const healthText = document.getElementById("healthText");
+      const healthBonusText = document.getElementById("healthBonusText");
+      const healthInput = document.getElementById("healthInput");
+      const healthBonus = document.getElementById("healthBonus");
+      const healthMinus = document.getElementById("healthMinus");
+      const healthPlus = document.getElementById("healthPlus");
+      const healthReset = document.getElementById("healthReset");
+      const hotbarSlots = document.getElementById("hotbarSlots");
+      const addItemImage = document.getElementById("addItemImage");
+      const addItemText = document.getElementById("addItemText");
+      const itemImageUpload = document.getElementById("itemImageUpload");
+      const saveTokenInfoBtn = document.getElementById("saveTokenInfo");
+      const attributesTags = document.getElementById("attributesTags");
+      const addAttributeBtn = document.getElementById("addAttribute");
+
+      // ===== ESTADO =====
+      let scale = 1;
+      let offsetX = 0;
+      let offsetY = 0;
+      let isPanning = false;
+      let startX = 0, startY = 0;
+      let selectedToken = null;
+      let gridEnabled = false;
+      let isReadMode = false;
+      let currentEditingToken = null;
+      const GRID_SIZE = 50;
+
+      let pages = [];
+      let currentPage = 0;
+      let tokenIdCounter = 0;
+
+      // ===== LOCAL STORAGE =====
+      function saveToLocal() {
+        try {
+          localStorage.setItem("tabletop_save", JSON.stringify({
+            pages,
+            currentPage,
+            gridEnabled
+          }));
+        } catch (_) {}
+      }
+
+      function loadFromLocal() {
+        try {
+          const data = localStorage.getItem("tabletop_save");
+          if (!data) return;
+          const parsed = JSON.parse(data);
+          pages = parsed.pages || [];
+          currentPage = parsed.currentPage || 0;
+          gridEnabled = parsed.gridEnabled !== undefined ? parsed.gridEnabled : false;
+        } catch (_) {}
+      }
+
+      // ===== UTIL =====
+      function updateTransform() {
+        canvas.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+        zoomLevelSpan.textContent = Math.round(scale * 100) + '%';
+      }
+
+      function snap(value) {
+        if (!gridEnabled) return value;
+        return Math.round(value / GRID_SIZE) * GRID_SIZE;
+      }
+
+      function updateUI() {
+        const count = tokensLayer.querySelectorAll('.token').length;
+        tokenCountSpan.textContent = count;
+        gridStatusSpan.textContent = gridEnabled ? 'grid ON' : 'grid OFF';
+        gridOverlay.classList.toggle('active', gridEnabled);
+        updateNavIndicators();
+      }
+
+      function updateNavIndicators() {
+        const total = pages.length;
+        const current = currentPage + 1;
+        navPageIndicator.textContent = `${current} / ${total}`;
+        navPrev.disabled = currentPage <= 0;
+        navNext.disabled = currentPage >= total - 1;
+      }
+
+      // ===== MAPA =====
+      mapUpload.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          mapImage.src = reader.result;
+          const defaultName = file.name.replace(/\.[^/.]+$/, '');
+          const pageName = prompt('Nome da cena:', defaultName);
+          if (pageName && pageName.trim()) {
+            mapTitle.textContent = pageName.trim();
+            if (pages[currentPage]) {
+              pages[currentPage].name = pageName.trim();
+            }
+          } else {
+            mapTitle.textContent = defaultName;
+            if (pages[currentPage]) {
+              pages[currentPage].name = defaultName;
+            }
+          }
+          saveState();
+          updateUI();
+          renderPages();
+        };
+        reader.readAsDataURL(file);
+      };
+
+      removeMapBtn.onclick = () => {
+        if (confirm("Remover mapa atual?")) {
+          mapImage.src = "";
+          mapTitle.textContent = "Sem mapa";
+          if (pages[currentPage]) {
+            pages[currentPage].name = "Sem mapa";
+          }
+          saveState();
+          renderPages();
+        }
+      };
+
+      // ===== ZOOM / PAN =====
+      canvasContainer.addEventListener("wheel", (e) => {
+        if (e.target.closest(".token")) return;
+        e.preventDefault();
+
+        const delta = e.deltaY < 0 ? 1 : -1;
+        const newScale = Math.min(Math.max(0.15, scale + delta * 0.1), 6);
+
+        const rect = canvasContainer.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        offsetX -= (mouseX / scale) * (newScale - scale);
+        offsetY -= (mouseY / scale) * (newScale - scale);
+
+        scale = newScale;
+        updateTransform();
+        updateUI();
+      });
+
+      canvasContainer.addEventListener("mousedown", (e) => {
+        if (e.target.closest(".token")) return;
+        isPanning = true;
+        startX = e.clientX - offsetX;
+        startY = e.clientY - offsetY;
+      });
+
+      window.addEventListener("mousemove", (e) => {
+        if (!isPanning) return;
+        offsetX = e.clientX - startX;
+        offsetY = e.clientY - startY;
+        updateTransform();
+      });
+
+      window.addEventListener("mouseup", () => {
+        isPanning = false;
+      });
+
+      zoomInBtn.onclick = () => {
+        scale = Math.min(scale + 0.15, 6);
+        updateTransform();
+        updateUI();
+      };
+
+      zoomOutBtn.onclick = () => {
+        scale = Math.max(scale - 0.15, 0.15);
+        updateTransform();
+        updateUI();
+      };
+
+      resetZoomBtn.onclick = () => {
+        scale = 1;
+        offsetX = 0;
+        offsetY = 0;
+        updateTransform();
+        updateUI();
+      };
+
+      centerMapBtn.onclick = () => {
+        offsetX = 0;
+        offsetY = 0;
+        scale = 1;
+        updateTransform();
+        updateUI();
+      };
+
+      // ===== DESELECIONAR =====
+      canvasContainer.addEventListener("click", (e) => {
+        if (!e.target.closest(".token")) {
+          document.querySelectorAll(".token").forEach(t => t.classList.remove("selected"));
+          selectedToken = null;
+        }
+      });
+
+      // ===== INVENTÁRIO =====
+      tokenUpload.onchange = (e) => {
+        [...e.target.files].forEach(file => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const clone = inventoryTemplate.content.cloneNode(true);
+            const item = clone.querySelector(".inventory-item");
+            const img = clone.querySelector("img");
+            img.src = reader.result;
+
+            item.onclick = () => {
+              showTokenFormatDialog(img.src);
+            };
+
+            item.addEventListener("dragstart", (ev) => {
+              ev.dataTransfer.setData("src", img.src);
+            });
+
+            inventory.appendChild(clone);
+          };
+          reader.readAsDataURL(file);
+        });
+      };
+
+      // ===== FORMAT DIALOG =====
+      function showTokenFormatDialog(src) {
+        const dialog = document.createElement('div');
+        dialog.style.cssText = `
+          position: fixed;
+          top: 0; left: 0; width: 100%; height: 100%;
+          background: rgba(0,0,0,0.7);
+          backdrop-filter: blur(4px);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 2000;
+          animation: fadeIn 0.2s ease;
+        `;
+
+        const box = document.createElement('div');
+        box.style.cssText = `
+          background: #1b212a;
+          border: 1px solid #3a5a7a;
+          border-radius: 20px;
+          padding: 30px;
+          max-width: 400px;
+          width: 90%;
+          text-align: center;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+          animation: slideUp 0.3s ease;
+        `;
+
+        box.innerHTML = `
+          <h3 style="color:#7ab7ff; margin-bottom:20px;">Formato do Token</h3>
+          <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+            <button id="formatRound" style="width:auto; padding:12px 24px; background:linear-gradient(145deg,#1c3c5a,#0f2538); border:2px solid #4a7db5;">
+              ⭕ Redondo<br><small style="color:#6f8aa8;">Com fundo</small>
+            </button>
+            <button id="formatPng" style="width:auto; padding:12px 24px; background:linear-gradient(145deg,#1c3c5a,#0f2538); border:2px solid #4a7db5;">
+              ◻️ PNG sem fundo<br><small style="color:#6f8aa8;">Transparente</small>
+            </button>
+          </div>
+          <button id="cancelFormat" style="margin-top:16px; background:transparent; border:1px solid #3a4a5a; color:#6f8aa8;">Cancelar</button>
+        `;
+
+        dialog.appendChild(box);
+        document.body.appendChild(dialog);
+
+        box.querySelector('#formatRound').onclick = () => {
+          document.body.removeChild(dialog);
+          createToken(src, 100 + Math.random() * 60, 100 + Math.random() * 60, false);
+        };
+
+        box.querySelector('#formatPng').onclick = () => {
+          document.body.removeChild(dialog);
+          createToken(src, 100 + Math.random() * 60, 100 + Math.random() * 60, true);
+        };
+
+        box.querySelector('#cancelFormat').onclick = () => {
+          document.body.removeChild(dialog);
+        };
+
+        dialog.onclick = (e) => {
+          if (e.target === dialog) {
+            document.body.removeChild(dialog);
+          }
+        };
+      }
+
+      // ===== DROP =====
+      canvasContainer.addEventListener("dragover", e => e.preventDefault());
+
+      canvasContainer.addEventListener("drop", (e) => {
+        e.preventDefault();
+        const src = e.dataTransfer.getData("src");
+        if (!src) return;
+        showTokenFormatDialog(src);
+      });
+
+      // ===== CRIAÇÃO DE TOKEN =====
+      function createToken(src, x, y, isPngFormat = false) {
+        const clone = tokenTemplate.content.cloneNode(true);
+        const token = clone.querySelector(".token");
+        const img = token.querySelector("img");
+        img.src = src;
+
+        if (isPngFormat) {
+          token.classList.add('token-png');
+        }
+
+        token.style.left = x + "px";
+        token.style.top = y + "px";
+        token.dataset.rotation = 0;
+        token.dataset.tokenId = (tokenIdCounter++);
+        token.dataset.health = 100;
+        token.dataset.maxHealth = 100;
+        token.dataset.healthBonus = 0;
+        token.dataset.isPng = isPngFormat;
+
+        token.dataset.name = '';
+        token.dataset.class = '';
+        token.dataset.race = '';
+        token.dataset.notes = '';
+        token.dataset.items = JSON.stringify([]);
+        token.dataset.attributes = JSON.stringify([]);
+
+        tokensLayer.appendChild(token);
+        makeInteractive(token);
+        saveState();
+        updateUI();
+        return token;
+      }
+
+      // ===== INTERAÇÃO TOKEN =====
+      function makeInteractive(token) {
+        let dragging = false;
+        let dragStartMouseX = 0, dragStartMouseY = 0;
+        let dragStartTokenX = 0, dragStartTokenY = 0;
+        let clickTimer = null;
+
+        token.addEventListener("mousedown", (e) => {
+          if (e.button !== 0) return;
+          e.stopPropagation();
+          
+          dragStartMouseX = e.clientX;
+          dragStartMouseY = e.clientY;
+          dragStartTokenX = parseFloat(token.style.left) || 0;
+          dragStartTokenY = parseFloat(token.style.top) || 0;
+          
+          dragging = true;
+          selectToken(token);
+        });
+
+        window.addEventListener("mousemove", (e) => {
+          if (!dragging) return;
+          
+          const deltaX = (e.clientX - dragStartMouseX) / scale;
+          const deltaY = (e.clientY - dragStartMouseY) / scale;
+          
+          let newX = dragStartTokenX + deltaX;
+          let newY = dragStartTokenY + deltaY;
+          
+          token.style.left = snap(newX) + "px";
+          token.style.top = snap(newY) + "px";
+        });
+
+        window.addEventListener("mouseup", () => {
+          if (dragging) {
+            dragging = false;
+            saveState();
+            updateUI();
+          }
+        });
+
+        token.addEventListener("click", (e) => {
+          e.stopPropagation();
+          selectToken(token);
+
+          if (clickTimer) {
+            clearTimeout(clickTimer);
+            clickTimer = null;
+            openTokenInfo(token);
+          } else {
+            clickTimer = setTimeout(() => {
+              clickTimer = null;
+            }, 300);
+          }
+        });
+
+        token.addEventListener("contextmenu", (e) => {
+          e.preventDefault();
+          token.remove();
+          if (selectedToken === token) selectedToken = null;
+          saveState();
+          updateUI();
+        });
+
+        token.querySelector(".size-up").onclick = (e) => {
+          e.stopPropagation();
+          let size = token.offsetWidth;
+          size += 10;
+          size = Math.min(400, size);
+          token.style.width = size + "px";
+          token.style.height = size + "px";
+          saveState();
+        };
+
+        token.querySelector(".size-down").onclick = (e) => {
+          e.stopPropagation();
+          let size = token.offsetWidth;
+          size -= 10;
+          size = Math.max(24, size);
+          token.style.width = size + "px";
+          token.style.height = size + "px";
+          saveState();
+        };
+
+        token.querySelector(".rotate-left").onclick = (e) => {
+          e.stopPropagation();
+          rotateToken(token, -15);
+        };
+
+        token.querySelector(".rotate-right").onclick = (e) => {
+          e.stopPropagation();
+          rotateToken(token, 15);
+        };
+      }
+
+      function rotateToken(token, deg) {
+        let current = parseInt(token.dataset.rotation || 0);
+        current += deg;
+        token.dataset.rotation = current;
+        token.style.transform = `rotate(${current}deg)`;
+        saveState();
+      }
+
+      function selectToken(token) {
+        document.querySelectorAll(".token").forEach(t => t.classList.remove("selected"));
+        selectedToken = token;
+        token.classList.add("selected");
+      }
+
+      // ===== TOKEN INFO =====
+      function openTokenInfo(token) {
+        currentEditingToken = token;
+        const img = token.querySelector('img').src;
+        tokenPreview.querySelector('img').src = img;
+
+        tokenName.value = token.dataset.name || '';
+        tokenClass.value = token.dataset.class || '';
+        tokenRace.value = token.dataset.race || '';
+        tokenNotes.value = token.dataset.notes || '';
+
+        const health = parseInt(token.dataset.health) || 100;
+        const maxHealth = parseInt(token.dataset.maxHealth) || 100;
+        const bonus = parseInt(token.dataset.healthBonus) || 0;
+        updateHealthDisplay(health, maxHealth, bonus);
+
+        const items = JSON.parse(token.dataset.items || '[]');
+        renderHotbar(items);
+
+        const attributes = JSON.parse(token.dataset.attributes || '[]');
+        renderAttributes(attributes);
+
+        tokenInfoOverlay.classList.add('active');
+      }
+
+      function closeTokenInfoPanel() {
+        tokenInfoOverlay.classList.remove('active');
+        currentEditingToken = null;
+      }
+
+      function updateHealthDisplay(health, maxHealth, bonus) {
+        const total = health + bonus;
+        const percent = Math.max(0, Math.min(100, (health / maxHealth) * 100));
+        healthFill.style.width = percent + '%';
+        healthText.textContent = `${Math.round(health)}/${Math.round(maxHealth)}`;
+        healthBonusText.textContent = `(+${bonus})`;
+        healthInput.value = health;
+        healthBonus.value = bonus;
+        
+        if (currentEditingToken) {
+          currentEditingToken.dataset.health = health;
+          currentEditingToken.dataset.maxHealth = maxHealth;
+          currentEditingToken.dataset.healthBonus = bonus;
+        }
+      }
+
+      // ===== ATTRIBUTES =====
+      function renderAttributes(attributes) {
+        attributesTags.innerHTML = '';
+        attributes.forEach((attr, index) => {
+          const tag = document.createElement('span');
+          tag.className = 'tag';
+          
+          const text = document.createElement('span');
+          text.textContent = `${attr.name} (${attr.value})`;
+          
+          const actions = document.createElement('span');
+          actions.className = 'tag-actions';
+          
+          const editBtn = document.createElement('button');
+          editBtn.className = 'edit-tag';
+          editBtn.textContent = '✏️';
+          editBtn.title = 'Editar';
+          editBtn.onclick = (e) => {
+            e.stopPropagation();
+            const newName = prompt('Nome do atributo:', attr.name);
+            if (newName && newName.trim()) {
+              const newValue = prompt('Valor:', attr.value);
+              if (newValue !== null) {
+                attr.name = newName.trim();
+                attr.value = newValue.trim() || '0';
+                if (currentEditingToken) {
+                  currentEditingToken.dataset.attributes = JSON.stringify(attributes);
+                  renderAttributes(attributes);
+                  saveState();
+                }
+              }
+            }
+          };
+          
+          const removeBtn = document.createElement('button');
+          removeBtn.textContent = '✕';
+          removeBtn.title = 'Remover';
+          removeBtn.onclick = (e) => {
+            e.stopPropagation();
+            attributes.splice(index, 1);
+            if (currentEditingToken) {
+              currentEditingToken.dataset.attributes = JSON.stringify(attributes);
+              renderAttributes(attributes);
+              saveState();
+            }
+          };
+          
+          actions.appendChild(editBtn);
+          actions.appendChild(removeBtn);
+          tag.appendChild(text);
+          tag.appendChild(actions);
+          attributesTags.appendChild(tag);
+        });
+      }
+
+      addAttributeBtn.onclick = () => {
+        if (!currentEditingToken) return;
+        const name = prompt('Nome do atributo (ex: Força):');
+        if (name && name.trim()) {
+          const value = prompt('Valor (ex: 5):', '0');
+          if (value !== null) {
+            const attributes = JSON.parse(currentEditingToken.dataset.attributes || '[]');
+            attributes.push({ name: name.trim(), value: value.trim() || '0' });
+            currentEditingToken.dataset.attributes = JSON.stringify(attributes);
+            renderAttributes(attributes);
+            saveState();
+          }
+        }
+      };
+
+      // ===== RENDER HOTBAR =====
+      function renderHotbar(items) {
+        hotbarSlots.innerHTML = '';
+        items.forEach((item, index) => {
+          const slot = document.createElement('div');
+          slot.className = 'slot';
+
+          if (item.image) {
+            const img = document.createElement('img');
+            img.src = item.image;
+            slot.appendChild(img);
+          }
+          if (item.name) {
+            const name = document.createElement('span');
+            name.className = 'item-name';
+            name.textContent = item.name;
+            slot.appendChild(name);
+          }
+
+          const removeBtn = document.createElement('button');
+          removeBtn.className = 'slot-remove';
+          removeBtn.textContent = '✕';
+          removeBtn.onclick = (e) => {
+            e.stopPropagation();
+            if (currentEditingToken) {
+              const items = JSON.parse(currentEditingToken.dataset.items || '[]');
+              items.splice(index, 1);
+              currentEditingToken.dataset.items = JSON.stringify(items);
+              renderHotbar(items);
+              saveState();
+            }
+          };
+          slot.appendChild(removeBtn);
+
+          hotbarSlots.appendChild(slot);
+        });
+      }
+
+      // ===== TOKEN INFO EVENTS =====
+      closeTokenInfo.onclick = closeTokenInfoPanel;
+      tokenInfoOverlay.onclick = (e) => {
+        if (e.target === tokenInfoOverlay) closeTokenInfoPanel();
+      };
+
+      healthInput.onchange = () => {
+        if (!currentEditingToken) return;
+        const health = parseInt(healthInput.value) || 0;
+        const maxHealth = parseInt(currentEditingToken.dataset.maxHealth) || 100;
+        const bonus = parseInt(healthBonus.value) || 0;
+        updateHealthDisplay(Math.min(health, maxHealth), maxHealth, bonus);
+      };
+
+      healthBonus.onchange = () => {
+        if (!currentEditingToken) return;
+        const health = parseInt(healthInput.value) || 0;
+        const maxHealth = parseInt(currentEditingToken.dataset.maxHealth) || 100;
+        const bonus = parseInt(healthBonus.value) || 0;
+        updateHealthDisplay(Math.min(health, maxHealth), maxHealth, bonus);
+      };
+
+      healthMinus.onclick = () => {
+        if (!currentEditingToken) return;
+        const health = parseInt(healthInput.value) || 0;
+        const maxHealth = parseInt(currentEditingToken.dataset.maxHealth) || 100;
+        const bonus = parseInt(healthBonus.value) || 0;
+        updateHealthDisplay(Math.max(0, health - 5), maxHealth, bonus);
+      };
+
+      healthPlus.onclick = () => {
+        if (!currentEditingToken) return;
+        const health = parseInt(healthInput.value) || 0;
+        const maxHealth = parseInt(currentEditingToken.dataset.maxHealth) || 100;
+        const bonus = parseInt(healthBonus.value) || 0;
+        updateHealthDisplay(Math.min(maxHealth, health + 5), maxHealth, bonus);
+      };
+
+      healthReset.onclick = () => {
+        if (!currentEditingToken) return;
+        const maxHealth = parseInt(currentEditingToken.dataset.maxHealth) || 100;
+        const bonus = parseInt(healthBonus.value) || 0;
+        updateHealthDisplay(maxHealth, maxHealth, bonus);
+      };
+
+      addItemImage.onclick = () => {
+        itemImageUpload.click();
+      };
+
+      itemImageUpload.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file || !currentEditingToken) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          const items = JSON.parse(currentEditingToken.dataset.items || '[]');
+          items.push({ image: reader.result, name: '' });
+          currentEditingToken.dataset.items = JSON.stringify(items);
+          renderHotbar(items);
+          saveState();
+        };
+        reader.readAsDataURL(file);
+        e.target.value = '';
+      };
+
+      addItemText.onclick = () => {
+        if (!currentEditingToken) return;
+        const name = prompt('Digite o nome do item:');
+        if (name && name.trim()) {
+          const items = JSON.parse(currentEditingToken.dataset.items || '[]');
+          items.push({ image: null, name: name.trim() });
+          currentEditingToken.dataset.items = JSON.stringify(items);
+          renderHotbar(items);
+          saveState();
+        }
+      };
+
+      saveTokenInfoBtn.onclick = () => {
+        if (!currentEditingToken) return;
+        currentEditingToken.dataset.name = tokenName.value;
+        currentEditingToken.dataset.class = tokenClass.value;
+        currentEditingToken.dataset.race = tokenRace.value;
+        currentEditingToken.dataset.notes = tokenNotes.value;
+        
+        const health = parseInt(healthInput.value) || 0;
+        const maxHealth = parseInt(currentEditingToken.dataset.maxHealth) || 100;
+        const bonus = parseInt(healthBonus.value) || 0;
+        currentEditingToken.dataset.health = Math.min(health, maxHealth);
+        currentEditingToken.dataset.maxHealth = maxHealth;
+        currentEditingToken.dataset.healthBonus = bonus;
+        
+        saveState();
+        closeTokenInfoPanel();
+        updateUI();
+      };
+
+      // ===== BOTÕES FERRAMENTAS =====
+      deleteBtn.onclick = () => {
+        if (selectedToken) {
+          selectedToken.remove();
+          selectedToken = null;
+          saveState();
+          updateUI();
+        }
+      };
+
+      duplicateBtn.onclick = () => {
+        if (!selectedToken) return;
+        const img = selectedToken.querySelector("img").src;
+        const x = parseFloat(selectedToken.style.left) + 30;
+        const y = parseFloat(selectedToken.style.top) + 30;
+        const isPng = selectedToken.classList.contains('token-png');
+        const token = createToken(img, x, y, isPng);
+        token.dataset.name = selectedToken.dataset.name || '';
+        token.dataset.class = selectedToken.dataset.class || '';
+        token.dataset.race = selectedToken.dataset.race || '';
+        token.dataset.notes = selectedToken.dataset.notes || '';
+        token.dataset.health = selectedToken.dataset.health || 100;
+        token.dataset.maxHealth = selectedToken.dataset.maxHealth || 100;
+        token.dataset.healthBonus = selectedToken.dataset.healthBonus || 0;
+        token.dataset.items = selectedToken.dataset.items || '[]';
+        token.dataset.attributes = selectedToken.dataset.attributes || '[]';
+        saveState();
+      };
+
+      toggleGridBtn.onclick = () => {
+        gridEnabled = !gridEnabled;
+        updateUI();
+        saveToLocal();
+      };
+
+      resetInventoryBtn.onclick = () => {
+        if (confirm("Resetar inventário? Todos os itens serão removidos.")) {
+          inventory.innerHTML = '';
+          saveToLocal();
+        }
+      };
+
+      saveAllBtn.onclick = () => {
+        saveState();
+        saveToLocal();
+        alert('✅ Tudo salvo com sucesso!');
+      };
+
+      // ===== TECLADO =====
+      window.addEventListener("keydown", (e) => {
+        if ((e.key === "Delete" || e.key === "Backspace") && selectedToken) {
+          selectedToken.remove();
+          selectedToken = null;
+          saveState();
+          updateUI();
+        }
+        if (e.ctrlKey && e.key.toLowerCase() === "d") {
+          e.preventDefault();
+          duplicateBtn.onclick();
+        }
+        if (e.key === "Escape") {
+          closeTokenInfoPanel();
+        }
+        if (e.ctrlKey && e.key.toLowerCase() === "s") {
+          e.preventDefault();
+          saveAllBtn.onclick();
+        }
+      });
+
+      // ===== PÁGINAS =====
+      function createPage() {
+        const name = prompt('Nome da cena:', 'Nova Cena');
+        if (!name || !name.trim()) return;
+        pages.push({ map: "", tokens: [], name: name.trim() });
+        currentPage = pages.length - 1;
+        renderPages();
+        loadPage();
+        saveToLocal();
+        updateUI();
+      }
+
+      newPageBtn.onclick = createPage;
+
+      function editPageName(index) {
+        const currentName = pages[index].name || 'Cena ' + (index + 1);
+        const newName = prompt('Editar nome da cena:', currentName);
+        if (newName && newName.trim()) {
+          pages[index].name = newName.trim();
+          if (index === currentPage) {
+            mapTitle.textContent = newName.trim();
+          }
+          renderPages();
+          saveToLocal();
+        }
+      }
+
+      function deletePage(index) {
+        if (pages.length <= 1) {
+          alert("Você precisa ter pelo menos uma página.");
+          return;
+        }
+        if (confirm(`Remover a página "${pages[index].name || 'Cena ' + (index + 1)}"?`)) {
+          pages.splice(index, 1);
+          if (currentPage >= pages.length) {
+            currentPage = pages.length - 1;
+          }
+          renderPages();
+          loadPage();
+          saveToLocal();
+          updateUI();
+        }
+      }
+
+      function renderPages() {
+        pagesList.innerHTML = "";
+        pages.forEach((page, i) => {
+          const div = document.createElement("div");
+          div.className = "page-item" + (i === currentPage ? " active" : "");
+
+          const label = document.createElement("span");
+          label.className = "page-label";
+          label.textContent = page.name || "Cena " + (i + 1);
+
+          const actions = document.createElement("div");
+          actions.className = "page-actions";
+
+          const editBtn = document.createElement("button");
+          editBtn.textContent = "✏️";
+          editBtn.title = "Editar nome";
+          editBtn.onclick = (e) => {
+            e.stopPropagation();
+            editPageName(i);
+          };
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.className = "delete-page";
+          deleteBtn.textContent = "✕";
+          deleteBtn.title = "Excluir página";
+          deleteBtn.onclick = (e) => {
+            e.stopPropagation();
+            deletePage(i);
+          };
+
+          actions.appendChild(editBtn);
+          actions.appendChild(deleteBtn);
+
+          div.appendChild(label);
+          div.appendChild(actions);
+
+          div.onclick = () => {
+            saveState();
+            currentPage = i;
+            loadPage();
+            renderPages();
+            saveToLocal();
+            updateUI();
+          };
+
+          pagesList.appendChild(div);
+        });
+        updateNavIndicators();
+      }
+
+      // ===== SAVE / LOAD =====
+      function saveState() {
+        if (!pages[currentPage]) return;
+        pages[currentPage].map = mapImage.src;
+        pages[currentPage].name = mapTitle.textContent;
+
+        const tokens = [];
+        tokensLayer.querySelectorAll(".token").forEach(token => {
+          const isPng = token.classList.contains('token-png');
+          tokens.push({
+            src: token.querySelector("img").src,
+            x: token.style.left,
+            y: token.style.top,
+            size: token.style.width,
+            rotation: token.dataset.rotation || 0,
+            isPng: isPng,
+            name: token.dataset.name || '',
+            class: token.dataset.class || '',
+            race: token.dataset.race || '',
+            notes: token.dataset.notes || '',
+            health: token.dataset.health || 100,
+            maxHealth: token.dataset.maxHealth || 100,
+            healthBonus: token.dataset.healthBonus || 0,
+            items: token.dataset.items || '[]',
+            attributes: token.dataset.attributes || '[]'
+          });
+        });
+        pages[currentPage].tokens = tokens;
+        saveToLocal();
+      }
+
+      function loadPage() {
+        tokensLayer.innerHTML = "";
+        const page = pages[currentPage];
+        if (!page) return;
+        mapImage.src = page.map || "";
+        mapTitle.textContent = page.name || "Sem mapa";
+
+        page.tokens.forEach(t => {
+          const token = createToken(t.src, parseFloat(t.x), parseFloat(t.y), t.isPng || false);
+          if (t.size) {
+            token.style.width = t.size;
+            token.style.height = t.size;
+          }
+          token.dataset.rotation = t.rotation || 0;
+          token.style.transform = `rotate(${token.dataset.rotation}deg)`;
+          token.dataset.name = t.name || '';
+          token.dataset.class = t.class || '';
+          token.dataset.race = t.race || '';
+          token.dataset.notes = t.notes || '';
+          token.dataset.health = t.health || 100;
+          token.dataset.maxHealth = t.maxHealth || 100;
+          token.dataset.healthBonus = t.healthBonus || 0;
+          token.dataset.items = t.items || '[]';
+          token.dataset.attributes = t.attributes || '[]';
+        });
+        
+        updateUI();
+      }
+
+      // ===== MODO LEITURA =====
+      function toggleReadMode() {
+        isReadMode = !isReadMode;
+        document.body.classList.toggle('read-mode', isReadMode);
+        readModeBtn.classList.toggle('active', isReadMode);
+        readModeBtnToolbar.classList.toggle('active', isReadMode);
+        readModeBtnToolbar.textContent = isReadMode ? '👁 Sair' : '👁 Modo Leitura';
+        readModeNav.style.display = isReadMode ? 'flex' : 'none';
+        updateNavIndicators();
+        saveToLocal();
+      }
+
+      readModeBtn.onclick = toggleReadMode;
+      readModeBtnToolbar.onclick = toggleReadMode;
+
+      // ===== NAVEGAÇÃO NO MODO LEITURA =====
+      navHome.onclick = () => {
+        if (isReadMode) {
+          toggleReadMode();
+        }
+      };
+
+      navPrev.onclick = () => {
+        if (currentPage > 0) {
+          saveState();
+          currentPage--;
+          loadPage();
+          renderPages();
+          saveToLocal();
+          updateUI();
+        }
+      };
+
+      navNext.onclick = () => {
+        if (currentPage < pages.length - 1) {
+          saveState();
+          currentPage++;
+          loadPage();
+          renderPages();
+          saveToLocal();
+          updateUI();
+        }
+      };
+
+      // ===== INIT =====
+      loadFromLocal();
+      if (pages.length === 0) {
+        createPage();
+      } else {
+        renderPages();
+        loadPage();
+      }
+      updateTransform();
+      updateUI();
+
+      gridOverlay.classList.toggle('active', gridEnabled);
+
+      mapImage.addEventListener("load", () => {
+        saveState();
+      });
+
+      console.log("🎲 Tabletop Virtual - Versão Final!");
+      console.log("✅ Atributos e inventário não são obrigatórios");
+      console.log("✅ Modo leitura com navegação discreta (ícones SVG)");
+    })();
+  </script>
+
+</body>
+</html>

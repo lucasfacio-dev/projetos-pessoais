@@ -355,7 +355,10 @@
         .readonly-mode .skill-tag button,
         .readonly-mode .shop-item .buy-btn,
         .readonly-mode .shop-item .btn-mission,
-        .readonly-mode .avatar-edit {
+        .readonly-mode .avatar-edit,
+        .readonly-mode .inventory-item .btn-mission,
+        .readonly-mode .history-item .btn-mission,
+        .readonly-mode .shop-item .upload-image-btn {
             opacity: 0;
             pointer-events: none;
             cursor: default;
@@ -469,6 +472,16 @@
         }
         .mission-actions { display: flex; gap: 8px; }
 
+        .mission-badge {
+            font-size: 11px;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .mission-badge.principal { background: rgba(212,168,71,0.2); color: var(--gold); }
+        .mission-badge.secundaria { background: rgba(100,200,255,0.15); color: #64c8ff; }
+
         .btn-mission {
             padding: 6px 14px;
             border-radius: 20px;
@@ -486,6 +499,93 @@
         .btn-mission.delete { background: rgba(200,50,50,0.15); color: #e74c3c; }
         .btn-mission.delete:hover { background: rgba(200,50,50,0.25); }
 
+        /* ===== HISTÓRICO ===== */
+        .history-toggle {
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.3s;
+        }
+        .history-toggle:hover { color: var(--gold); }
+        .history-toggle .fa-chevron-right { transition: transform 0.3s; }
+        .history-toggle.open .fa-chevron-right { transform: rotate(90deg); }
+
+        .history-list {
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            margin: 10px 0;
+        }
+        .history-list.open { display: flex; }
+
+        .history-item {
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 3px solid #2ecc71;
+            flex-wrap: wrap;
+        }
+        .history-item .history-text {
+            color: rgba(245,239,224,0.7);
+            flex: 1;
+            min-width: 150px;
+        }
+        .history-item .history-xp {
+            color: var(--gold);
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .history-item .history-date {
+            color: rgba(245,239,224,0.3);
+            font-size: 12px;
+        }
+        .history-item .history-badge {
+            font-size: 10px;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .history-item .history-badge.principal { background: rgba(212,168,71,0.15); color: var(--gold); }
+        .history-item .history-badge.secundaria { background: rgba(100,200,255,0.1); color: #64c8ff; }
+
+        /* ===== INVENTÁRIO ===== */
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            margin: 10px 0;
+        }
+        .inventory-item {
+            background: rgba(0,0,0,0.25);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid rgba(212,168,71,0.06);
+            transition: all 0.3s;
+        }
+        .inventory-item:hover { border-color: var(--gold); transform: translateY(-2px); }
+        .inventory-item img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: #0a0a0a;
+            margin-bottom: 6px;
+        }
+        .inventory-item .inv-name {
+            color: var(--white);
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .inventory-item .btn-mission {
+            margin-top: 4px;
+            padding: 2px 12px;
+            font-size: 11px;
+        }
+
         /* ===== LOJA ===== */
         .shop-grid {
             display: grid;
@@ -500,6 +600,7 @@
             border: 1px solid rgba(212,168,71,0.08);
             text-align: center;
             transition: all 0.3s;
+            position: relative;
         }
         .shop-item:hover { border-color: var(--gold); transform: translateY(-3px); }
         .shop-item img {
@@ -524,6 +625,60 @@
         }
         .shop-item .buy-btn:hover { transform: scale(1.05); }
         .shop-item .buy-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        .shop-item .upload-image-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(212,168,71,0.15);
+            border: 1px solid rgba(212,168,71,0.2);
+            color: var(--gold-light);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+        }
+        .shop-item .upload-image-btn:hover {
+            background: rgba(212,168,71,0.25);
+            transform: scale(1.1);
+        }
+        .shop-item .upload-image-btn .tooltip {
+            visibility: hidden;
+            width: 140px;
+            background: #1a1a1a;
+            color: var(--white);
+            text-align: center;
+            border-radius: 8px;
+            padding: 6px 10px;
+            position: absolute;
+            z-index: 10;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            font-weight: 400;
+            border: 1px solid rgba(212,168,71,0.15);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .shop-item .upload-image-btn .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #1a1a1a;
+        }
+        .shop-item .upload-image-btn:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
 
         /* ===== MURAL ===== */
         .mural {
@@ -761,9 +916,9 @@
         .foto-info input:focus { outline: none; border-color: var(--gold); background: rgba(212,168,71,0.02); }
         .foto-info input::placeholder { color: rgba(245,239,224,0.2); }
 
-        .empty-state { text-align: center; padding: 40px 20px; color: rgba(245,239,224,0.3); }
-        .empty-state i { font-size: 48px; margin-bottom: 15px; opacity: 0.3; }
-        .empty-state p { font-size: 16px; }
+        .empty-state { text-align: center; padding: 20px; color: rgba(245,239,224,0.3); }
+        .empty-state i { font-size: 32px; margin-bottom: 10px; opacity: 0.3; }
+        .empty-state p { font-size: 14px; }
 
         /* ===== RESPONSIVO ===== */
         @media (max-width: 768px) {
@@ -784,6 +939,8 @@
         @media (max-width: 480px) {
             .modes-grid { grid-template-columns: 1fr; }
             .save-creation input { min-width: 150px; }
+            .inventory-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+            .shop-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -898,9 +1055,43 @@
         <div class="section-title" style="font-size:18px; margin-top:10px;"><i class="fas fa-star"></i> Skills</div>
         <div class="skills-container" id="skillsContainer"></div>
 
-        <div class="section-title" style="font-size:18px; margin-top:15px;"><i class="fas fa-quest"></i> Missões</div>
-        <div class="mission-list" id="gameMissionList"></div>
+        <div class="section-title" style="font-size:18px; margin-top:15px;">
+            <i class="fas fa-crown"></i> Missões Principais
+            <span style="font-size:14px; color:rgba(245,239,224,0.4); font-weight:400;">(principal)</span>
+        </div>
+        <div class="mission-list" id="gameMissionListPrincipal"></div>
 
+        <div class="section-title" style="font-size:18px; margin-top:15px;">
+            <i class="fas fa-feather-alt"></i> Missões Secundárias
+            <span style="font-size:14px; color:rgba(245,239,224,0.4); font-weight:400;">(secundária)</span>
+        </div>
+        <div class="mission-list" id="gameMissionListSecundaria"></div>
+
+        <!-- INVENTÁRIO -->
+        <div class="section-title" style="font-size:18px; margin-top:20px;">
+            <i class="fas fa-box"></i> Inventário
+            <span style="font-size:14px; color:rgba(245,239,224,0.4); font-weight:400;">(itens adquiridos)</span>
+        </div>
+        <div class="inventory-grid" id="inventoryContainer"></div>
+
+        <!-- HISTÓRICO (colapsável) -->
+        <div style="margin-top:20px;">
+            <div class="section-title history-toggle" id="historyToggle" style="font-size:18px; cursor:pointer; margin-bottom:10px;">
+                <i class="fas fa-history"></i> Histórico de Missões
+                <i class="fas fa-chevron-right" style="font-size:16px; transition: transform 0.3s;"></i>
+                <span style="font-size:14px; color:rgba(245,239,224,0.4); font-weight:400; margin-left:5px;">(clique para expandir)</span>
+            </div>
+            <div class="history-list" id="historyContainer">
+                <div class="empty-state"><i class="fas fa-history"></i><p>Nenhuma missão concluída ainda</p></div>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;">
+                <button class="btn-secondary hidden-in-readonly" id="clearHistoryBtn" style="padding:4px 16px; font-size:12px;">
+                    <i class="fas fa-trash"></i> Limpar Histórico
+                </button>
+            </div>
+        </div>
+
+        <!-- LOJA -->
         <div class="section-title" style="font-size:18px; margin-top:20px;"><i class="fas fa-store"></i> Loja</div>
         <div style="display:flex; gap:10px; margin-bottom:15px;">
             <button class="btn-primary hidden-in-readonly" id="shopAddItem"><i class="fas fa-plus"></i> Adicionar Item</button>
@@ -963,18 +1154,22 @@
     let timerIntervals = {};
     let diarioCurrentPage = 0;
     let readonlyMode = false;
+    let historyOpen = false;
 
     // ===== LOAD/SAVE =====
     function loadFromStorage() {
         try {
-            const raw = localStorage.getItem('grimorio_saves_v4');
+            const raw = localStorage.getItem('grimorio_saves_v5');
             if (raw) saves = JSON.parse(raw);
         } catch(e) {}
         if (Object.keys(saves).length === 0) {
             saves = {
                 'Demo': {
                     postits: [{text: 'Bem-vindo ao Grimório!'}],
-                    missions: [{text: 'Completar tutorial', xp: 50}],
+                    missionsPrincipal: [{text: 'Completar tutorial', xp: 50}],
+                    missionsSecundaria: [{text: 'Explorar o grimório', xp: 20}],
+                    history: [],
+                    inventory: [],
                     timers: [],
                     diario: [{title: 'Primeiro dia', content: 'Comecei minha jornada!'}],
                     fotos: [],
@@ -988,12 +1183,22 @@
                 }
             };
         }
+        // Migrar dados antigos
+        Object.keys(saves).forEach(key => {
+            const data = saves[key];
+            if (!data.missionsPrincipal) data.missionsPrincipal = [];
+            if (!data.missionsSecundaria) data.missionsSecundaria = [];
+            if (!data.history) data.history = [];
+            if (!data.inventory) data.inventory = [];
+            if (!data.shop) data.shop = [];
+            if (!data.skills) data.skills = [];
+        });
         updateMenuSaves();
     }
 
     function persist() {
         try {
-            localStorage.setItem('grimorio_saves_v4', JSON.stringify(saves));
+            localStorage.setItem('grimorio_saves_v5', JSON.stringify(saves));
         } catch(e) {}
     }
 
@@ -1023,7 +1228,8 @@
         if (!name) { alert('Digite um nome!'); return; }
         if (saves[name]) { alert('Já existe um save com este nome!'); return; }
         saves[name] = {
-            postits: [], missions: [], timers: [], diario: [], fotos: [], tasks: [],
+            postits: [], missionsPrincipal: [], missionsSecundaria: [], history: [], inventory: [],
+            timers: [], diario: [], fotos: [], tasks: [],
             xp: 0, level: 1, points: 0,
             playerName: 'Aventureiro',
             playerBio: 'Um bravo guerreiro em busca de glória.',
@@ -1142,7 +1348,6 @@
         document.getElementById('gameModeTitle').textContent = mode.charAt(0).toUpperCase() + mode.slice(1);
         document.getElementById('gameSaveInfo').textContent = `Save: ${currentSave}`;
 
-        // Reset readonly quando entra num modo
         readonlyMode = false;
         document.getElementById('readonlyToggle').classList.remove('active');
         document.getElementById('readonlyToggle').innerHTML = '<i class="fas fa-eye"></i> Leitura';
@@ -1153,6 +1358,9 @@
         if (target) target.classList.add('active');
 
         diarioCurrentPage = 0;
+        historyOpen = false;
+        document.getElementById('historyToggle').classList.remove('open');
+        document.getElementById('historyContainer').classList.remove('open');
         renderMode(mode);
     }
 
@@ -1186,7 +1394,8 @@
         document.getElementById('profileBio').value = data.playerBio || '';
         document.getElementById('gameLevel').textContent = data.level || 1;
         document.getElementById('gameXp').textContent = data.xp || 0;
-        document.getElementById('gameMissionsCount').textContent = (data.missions || []).length;
+        const totalMissions = (data.missionsPrincipal || []).length + (data.missionsSecundaria || []).length;
+        document.getElementById('gameMissionsCount').textContent = totalMissions;
         document.getElementById('gamePoints').textContent = data.points || 0;
         document.getElementById('xpPerLevel').value = data.xpPerLevel || 100;
 
@@ -1195,6 +1404,7 @@
         const progress = Math.min(100, (xp / xpPerLevel) * 100);
         document.getElementById('gameXpBar').style.width = progress + '%';
 
+        // Skills
         const skillsContainer = document.getElementById('skillsContainer');
         skillsContainer.innerHTML = '';
         (data.skills || []).forEach((skill, idx) => {
@@ -1204,64 +1414,210 @@
             skillsContainer.appendChild(tag);
         });
 
-        const container = document.getElementById('gameMissionList');
-        container.innerHTML = '';
-        (data.missions || []).forEach((m, idx) => {
+        // Missões Principais
+        const containerPrincipal = document.getElementById('gameMissionListPrincipal');
+        containerPrincipal.innerHTML = '';
+        (data.missionsPrincipal || []).forEach((m, idx) => {
             const div = document.createElement('div');
             div.className = 'mission-item';
             div.innerHTML = `
+                <span class="mission-badge principal">★ Principal</span>
                 <span class="mission-text">${m.text || 'Missão'}</span>
                 <span class="mission-xp">+${m.xp || 0} XP</span>
                 <div class="mission-actions">
-                    <button class="btn-mission complete" onclick="gameComplete(${idx})"><i class="fas fa-check"></i></button>
-                    <button class="btn-mission edit" onclick="gameEdit(${idx})"><i class="fas fa-pencil-alt"></i></button>
-                    <button class="btn-mission delete" onclick="gameDelete(${idx})"><i class="fas fa-trash"></i></button>
+                    <button class="btn-mission complete" onclick="gameComplete('principal', ${idx})"><i class="fas fa-check"></i></button>
+                    <button class="btn-mission edit" onclick="gameEdit('principal', ${idx})"><i class="fas fa-pencil-alt"></i></button>
+                    <button class="btn-mission delete" onclick="gameDelete('principal', ${idx})"><i class="fas fa-trash"></i></button>
                 </div>
             `;
-            container.appendChild(div);
+            containerPrincipal.appendChild(div);
         });
+        if ((data.missionsPrincipal || []).length === 0) {
+            containerPrincipal.innerHTML = '<div class="empty-state"><p style="font-size:14px;">Nenhuma missão principal</p></div>';
+        }
 
+        // Missões Secundárias
+        const containerSecundaria = document.getElementById('gameMissionListSecundaria');
+        containerSecundaria.innerHTML = '';
+        (data.missionsSecundaria || []).forEach((m, idx) => {
+            const div = document.createElement('div');
+            div.className = 'mission-item';
+            div.innerHTML = `
+                <span class="mission-badge secundaria">✦ Secundária</span>
+                <span class="mission-text">${m.text || 'Missão'}</span>
+                <span class="mission-xp">+${m.xp || 0} XP</span>
+                <div class="mission-actions">
+                    <button class="btn-mission complete" onclick="gameComplete('secundaria', ${idx})"><i class="fas fa-check"></i></button>
+                    <button class="btn-mission edit" onclick="gameEdit('secundaria', ${idx})"><i class="fas fa-pencil-alt"></i></button>
+                    <button class="btn-mission delete" onclick="gameDelete('secundaria', ${idx})"><i class="fas fa-trash"></i></button>
+                </div>
+            `;
+            containerSecundaria.appendChild(div);
+        });
+        if ((data.missionsSecundaria || []).length === 0) {
+            containerSecundaria.innerHTML = '<div class="empty-state"><p style="font-size:14px;">Nenhuma missão secundária</p></div>';
+        }
+
+        // Inventário
+        renderInventory();
+
+        // Histórico
+        renderHistory();
+
+        // Loja
         renderShop();
     }
 
-    window.gameComplete = function(idx) {
+    // ===== INVENTÁRIO =====
+    function renderInventory() {
+        const container = document.getElementById('inventoryContainer');
+        const data = getSaveData();
+        if (!data) return;
+        container.innerHTML = '';
+        if (!data.inventory || data.inventory.length === 0) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-box-open"></i><p style="font-size:14px;">Inventário vazio</p></div>';
+            return;
+        }
+        data.inventory.forEach((item, idx) => {
+            const div = document.createElement('div');
+            div.className = 'inventory-item';
+            div.innerHTML = `
+                <img src="${item.image || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22%3E%3Crect width=%2260%22 height=%2260%22 fill=%22%230a0a0a%22/%3E%3Ctext x=%2215%22 y=%2238%22 font-size=%2225%22 fill=%22%23d4a847%22%3E🎁%3C/text%3E%3C/svg%3E'}" alt="${item.name}">
+                <div class="inv-name">${item.name}</div>
+                <button class="btn-mission delete" onclick="removeFromInventory(${idx})" style="padding:2px 12px; font-size:11px;"><i class="fas fa-trash"></i></button>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    window.removeFromInventory = function(idx) {
+        if (readonlyMode) return;
+        if (!confirm('Remover este item do inventário?')) return;
+        const data = getSaveData();
+        if (!data) return;
+        data.inventory.splice(idx, 1);
+        renderMode('game');
+    };
+
+    // ===== HISTÓRICO =====
+    function renderHistory() {
+        const container = document.getElementById('historyContainer');
+        const data = getSaveData();
+        if (!data) return;
+        container.innerHTML = '';
+        if (!data.history || data.history.length === 0) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-history"></i><p style="font-size:14px;">Nenhuma missão concluída ainda</p></div>';
+            return;
+        }
+        const historyCopy = [...data.history].reverse();
+        historyCopy.forEach((h, idx) => {
+            const realIdx = data.history.length - 1 - idx;
+            const div = document.createElement('div');
+            div.className = 'history-item';
+            div.innerHTML = `
+                <span class="history-badge ${h.type}">${h.type === 'principal' ? '★ Principal' : '✦ Secundária'}</span>
+                <span class="history-text">${h.text || 'Missão'}</span>
+                <span class="history-xp">+${h.xp || 0} XP</span>
+                <span class="history-date">${h.date || ''}</span>
+                <button class="btn-mission delete" onclick="deleteHistory(${realIdx})" style="padding:2px 10px;"><i class="fas fa-trash"></i></button>
+            `;
+            container.appendChild(div);
+        });
+        if (historyOpen) {
+            container.classList.add('open');
+        }
+    }
+
+    window.deleteHistory = function(idx) {
+        if (readonlyMode) return;
+        if (!confirm('Remover esta entrada do histórico?')) return;
+        const data = getSaveData();
+        if (!data) return;
+        data.history.splice(idx, 1);
+        renderMode('game');
+    };
+
+    // Toggle histórico
+    document.getElementById('historyToggle').addEventListener('click', function() {
+        historyOpen = !historyOpen;
+        this.classList.toggle('open');
+        document.getElementById('historyContainer').classList.toggle('open');
+    });
+
+    document.getElementById('clearHistoryBtn').addEventListener('click', function() {
+        if (readonlyMode) return;
+        if (!confirm('Limpar todo o histórico de missões?')) return;
+        const data = getSaveData();
+        if (!data) return;
+        data.history = [];
+        renderMode('game');
+    });
+
+    // ===== FUNÇÕES DE MISSÕES =====
+    window.gameComplete = function(type, idx) {
         if (readonlyMode) return;
         const data = getSaveData();
         if (!data) return;
-        const m = data.missions[idx];
-        if (m) {
-            data.xp = (data.xp || 0) + (m.xp || 0);
+        let mission;
+        if (type === 'principal') {
+            mission = data.missionsPrincipal[idx];
+            if (mission) {
+                data.missionsPrincipal.splice(idx, 1);
+            }
+        } else {
+            mission = data.missionsSecundaria[idx];
+            if (mission) {
+                data.missionsSecundaria.splice(idx, 1);
+            }
+        }
+        if (mission) {
+            data.xp = (data.xp || 0) + (mission.xp || 0);
             data.points = (data.points || 0) + 5;
+            if (!data.history) data.history = [];
+            data.history.push({
+                text: mission.text,
+                xp: mission.xp,
+                type: type,
+                date: new Date().toLocaleString()
+            });
             const xpPerLevel = data.xpPerLevel || 100;
             while (data.xp >= xpPerLevel) {
                 data.xp -= xpPerLevel;
                 data.level = (data.level || 1) + 1;
                 alert(`🎉 Nível up! Você alcançou o nível ${data.level}!`);
             }
-            data.missions.splice(idx, 1);
             renderMode('game');
         }
     };
 
-    window.gameEdit = function(idx) {
+    window.gameEdit = function(type, idx) {
         if (readonlyMode) return;
         const data = getSaveData();
         if (!data) return;
-        const m = data.missions[idx];
-        if (!m) return;
-        const text = prompt('Nome da missão:', m.text);
-        const xp = prompt('XP ao concluir:', m.xp);
-        if (text !== null) m.text = text;
-        if (xp !== null) m.xp = parseInt(xp) || 0;
+        let mission;
+        if (type === 'principal') {
+            mission = data.missionsPrincipal[idx];
+        } else {
+            mission = data.missionsSecundaria[idx];
+        }
+        if (!mission) return;
+        const text = prompt('Nome da missão:', mission.text);
+        const xp = prompt('XP ao concluir:', mission.xp);
+        if (text !== null) mission.text = text;
+        if (xp !== null) mission.xp = parseInt(xp) || 0;
         renderMode('game');
     };
 
-    window.gameDelete = function(idx) {
+    window.gameDelete = function(type, idx) {
         if (readonlyMode) return;
         if (!confirm('Remover missão?')) return;
         const data = getSaveData();
         if (!data) return;
-        data.missions.splice(idx, 1);
+        if (type === 'principal') {
+            data.missionsPrincipal.splice(idx, 1);
+        } else {
+            data.missionsSecundaria.splice(idx, 1);
+        }
         renderMode('game');
     };
 
@@ -1276,13 +1632,17 @@
     document.getElementById('gameAddMission').addEventListener('click', ()=>{
         if (readonlyMode) return;
         const text = prompt('Nome da missão:');
-        if (text) {
-            const xp = parseInt(prompt('XP ao concluir:', '10')) || 0;
-            const data = getSaveData();
-            if (!data) return;
-            data.missions.push({ text, xp });
-            renderMode('game');
+        if (!text) return;
+        const type = confirm('Clique em OK para Missão Principal, Cancelar para Secundária') ? 'principal' : 'secundaria';
+        const xp = parseInt(prompt('XP ao concluir:', '10')) || 0;
+        const data = getSaveData();
+        if (!data) return;
+        if (type === 'principal') {
+            data.missionsPrincipal.push({ text, xp });
+        } else {
+            data.missionsSecundaria.push({ text, xp });
         }
+        renderMode('game');
     });
 
     document.getElementById('gameResetXp').addEventListener('click', ()=>{
@@ -1362,8 +1722,12 @@
         (data.shop || []).forEach((item, idx) => {
             const div = document.createElement('div');
             div.className = 'shop-item';
-            const hasItem = data.inventory && data.inventory.includes(item.name);
+            const hasItem = data.inventory && data.inventory.some(inv => inv.name === item.name);
             div.innerHTML = `
+                <button class="upload-image-btn hidden-in-readonly" onclick="uploadShopImage(${idx})" title="Adicionar imagem">
+                    <i class="fas fa-camera"></i>
+                    <span class="tooltip">Clique para adicionar/alterar imagem</span>
+                </button>
                 <img src="${item.image || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2280%22%3E%3Crect width=%2280%22 height=%2280%22 fill=%22%230a0a0a%22/%3E%3Ctext x=%2220%22 y=%2250%22 font-size=%2230%22 fill=%22%23d4a847%22%3E🎁%3C/text%3E%3C/svg%3E'}" alt="${item.name}">
                 <div class="item-name">${item.name}</div>
                 <div class="item-price">${item.price} pontos</div>
@@ -1373,6 +1737,29 @@
             container.appendChild(div);
         });
     }
+
+    window.uploadShopImage = function(idx) {
+        if (readonlyMode) return;
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = function(e) {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    const data = getSaveData();
+                    if (!data) return;
+                    if (data.shop[idx]) {
+                        data.shop[idx].image = ev.target.result;
+                        renderMode('game');
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+        input.click();
+    };
 
     window.buyItem = function(idx) {
         if (readonlyMode) return;
@@ -1385,7 +1772,7 @@
             return;
         }
         if (!data.inventory) data.inventory = [];
-        data.inventory.push(item.name);
+        data.inventory.push({ name: item.name, image: item.image || null });
         data.points = (data.points || 0) - item.price;
         renderMode('game');
         alert(`🎉 Você adquiriu "${item.name}"!`);
@@ -1408,27 +1795,8 @@
         const data = getSaveData();
         if (!data) return;
         if (!data.shop) data.shop = [];
-        const hasImage = confirm('Deseja adicionar uma imagem para este item?');
-        if (hasImage) {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.onchange = function(e) {
-                const file = this.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(ev) {
-                        data.shop.push({ name, price, image: ev.target.result });
-                        renderMode('game');
-                    };
-                    reader.readAsDataURL(file);
-                }
-            };
-            input.click();
-        } else {
-            data.shop.push({ name, price, image: null });
-            renderMode('game');
-        }
+        data.shop.push({ name, price, image: null });
+        renderMode('game');
     });
 
     // ===== MURAL =====
